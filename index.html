@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Link Manager Dashboard</title>
     <style>
-        /* ... CSS code (same as before) ... */
         :root {
             --primary: #5c6bc0; /* Indigo */
             --primary-dark: #3f51b5;
@@ -156,8 +155,8 @@
     </div>
 
     <script>
-        // --- 1. CONFIGURATION: Apps Script URL ---
-        const API_URL = 'https://script.google.com/macros/s/AKfycbzQMRXiuz-wdL6lplqmKbS9CQYvgHZDKj6f1H4pWl1PDxSS2z67Obtulr_y9rimJSv7kw/exec'; 
+        // --- 1. CONFIGURATION: Apps Script URL (UPDATED) ---
+        const API_URL = 'https://script.google.com/macros/s/AKfycbxCleD9I0mZr8kk1P-HHpZSGZbFzBIATNWLEtLCggzl8jqjonfi7gXBwYyYageUK7Vohg/exec'; 
         
         // --- 2. GLOBAL STATE ---
         let allLinksData = [];
@@ -226,7 +225,7 @@
                                 <span class="badge">${link.clicks || 0} Clicks</span>
                             </div>
                             <div style="font-size: 12px; color: #999;">
-                                Created: ${new Date(link.created_at).toLocaleDateString()}
+                                Created: ${new Date(link.created).toLocaleDateString()}
                             </div>
                         </div>
                         <div class="link-url" style="color: var(--primary-dark); font-weight: 500;">
@@ -277,7 +276,6 @@
                     updateStats();
                 }
             } catch (error) {
-                // Main Connection Error Handler
                 showMessage('Connection error: Could not connect to backend to fetch data.', 'error', 'globalMessage');
                 allLinksData = [];
                 displayLinks();
