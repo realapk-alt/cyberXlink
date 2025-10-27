@@ -156,6 +156,7 @@
 
     <script>
         // --- 1. CONFIGURATION: Apps Script URL (UPDATED) ---
+        // Apps Script's GET Handler is now used for everything (Login/Data Fetch/Redirect)
         const API_URL = 'https://script.google.com/macros/s/AKfycbyee9g4_oG6gZnn_oWH4amtp8N2eHU7o8biF000LIKnEszKoBrJ4ngFTN_9KnZYC_CTLA/exec'; 
         
         // --- 2. GLOBAL STATE ---
@@ -164,6 +165,7 @@
 
         // --- 3. UTILITY FUNCTIONS ---
         function getPermanentUrl(slug, password) {
+            // The permanent link points to the Apps Script doGet handler
             let url = `${API_URL}?s=${slug}`;
             if (password) {
                 url += `&p=${password}`;
@@ -254,16 +256,25 @@
             });
         }
 
-        // --- 4. CORE FETCH FUNCTIONS ---
+        // --- 4. CORE FETCH FUNCTIONS (NOW USING GET) ---
+
+        // Helper to perform GET request and return JSON data
+        async function fetchJsonData(queryString) {
+            const url = `${API_URL}?${queryString}`;
+            try {
+                const response = await fetch(url);
+                return response.json();
+            } catch (error) {
+                throw new Error('Network/Server Connection Error.');
+            }
+        }
 
         async function fetchLinks() {
             try {
-                const response = await fetch(API_URL, {
-                    method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({ action: 'getLinks' })
-                });
-                const result = await response.json();
+                // Show loading state
+                document.getElementById('linksList').innerHTML = '<p style="text-align: center; color: #667eea; padding: 40px;">Fetching links...</p>';
+                
+                const result = await fetchJsonData('action=data');
                 
                 if (result.success) {
                     allLinksData = result.data || [];
@@ -271,15 +282,9 @@
                     updateStats();
                 } else {
                     showMessage(`Error fetching links: ${result.message}`, 'error', 'globalMessage');
-                    allLinksData = [];
-                    displayLinks();
-                    updateStats();
                 }
             } catch (error) {
-                showMessage('Connection error: Could not connect to backend to fetch data.', 'error', 'globalMessage');
-                allLinksData = [];
-                displayLinks();
-                updateStats();
+                showMessage(`Error: ${error.message}`, 'error', 'globalMessage');
             }
         }
 
@@ -299,14 +304,11 @@
             document.getElementById('createLinkBtnText').innerHTML = '<span class="loader"></span> Creating...';
 
             const linkData = { name, actualUrl: url, slug, password };
+            const encodedLinkData = encodeURIComponent(JSON.stringify(linkData));
+            const queryString = `action=add&linkData=${encodedLinkData}`;
 
             try {
-                const response = await fetch(API_URL, {
-                    method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({ action: 'addLink', linkData })
-                });
-                const result = await response.json();
+                const result = await fetchJsonData(queryString);
 
                 if (result.success) {
                     showMessage('✅ ' + result.message, 'success', 'globalMessage');
@@ -317,7 +319,7 @@
                     showMessage('❌ ' + result.message, 'error', 'globalMessage');
                 }
             } catch (error) {
-                showMessage('❌ Server connection error during link creation.', 'error', 'globalMessage');
+                showMessage(`❌ Error: ${error.message}`, 'error', 'globalMessage');
             } finally {
                 btn.disabled = false;
                 document.getElementById('createLinkBtnText').textContent = 'Create Permanent Link';
@@ -327,13 +329,9 @@
         async function deleteLink(slug) {
             if (!confirm(`Are you sure you want to delete the link with slug: ${slug}?`)) return;
 
+            const queryString = `action=delete&slug=${slug}`;
             try {
-                const response = await fetch(API_URL, {
-                    method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({ action: 'deleteLink', slug })
-                });
-                const result = await response.json();
+                const result = await fetchJsonData(queryString);
 
                 if (result.success) {
                     showMessage('✅ ' + result.message, 'success', 'globalMessage');
@@ -342,55 +340,57 @@
                     showMessage('❌ ' + result.message, 'error', 'globalMessage');
                 }
             } catch (error) {
-                showMessage('❌ Server connection error during deletion.', 'error', 'globalMessage');
+                showMessage(`❌ Error: ${error.message}`, 'error', 'globalMessage');
             }
         }
 
-        // --- 5. AUTHENTICATION ---
+        // --- 5. AUTHENTICATION (Uses Window Location Redirect) ---
 
-        async function handleLogin() {
+        function handleLogin() {
             const username = document.getElementById('username').value.trim();
             const password = document.getElementById('password').value;
-            const loginBtn = document.getElementById('loginBtn');
             
             if (!username || !password) {
                 showMessage('Please enter both username and password.');
                 return;
             }
 
-            loginBtn.disabled = true;
-            document.getElementById('loginBtnText').innerHTML = '<span class="loader"></span> Logging in...';
-
-            try {
-                const response = await fetch(API_URL, {
-                    method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({ action: 'login', username, password })
-                });
-                const result = await response.json();
-
-                if (result.success) {
-                    sessionStorage.setItem(sessionKey, JSON.stringify({ loggedIn: true, username: result.user.username }));
-                    
-                    showMessage('✅ Login successful!', 'success');
-                    
-                    setTimeout(() => {
-                        renderDashboard();
-                    }, 500);
-                    
-                } else {
-                    showMessage('❌ ' + (result.message || 'Login failed. Invalid credentials or server response.'));
-                }
-                
-            } catch (error) {
-                showMessage('❌ Connection Error. Check Apps Script URL/Deployment/Permissions.');
-            } finally {
-                loginBtn.disabled = false;
-                document.getElementById('loginBtnText').textContent = 'Login';
-            }
+            // Construct the Apps Script GET login URL
+            const loginUrl = `${API_URL}?action=login&username=${username}&password=${password}`;
+            
+            // Redirecting the whole page to Apps Script to handle login and redirect back
+            window.location.href = loginUrl;
         }
 
+        // --- 6. INITIALIZATION & Session Handling ---
+        
         function renderDashboard() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const authSuccess = urlParams.get('auth_success');
+            const message = urlParams.get('message');
+            const userData = urlParams.get('user');
+
+            // 1. Handle Login Result (Redirection from Apps Script)
+            if (authSuccess !== null) {
+                const redirectUrl = window.location.origin + window.location.pathname;
+                
+                if (authSuccess === 'true' && userData) {
+                    const sessionData = JSON.parse(decodeURIComponent(userData));
+                    sessionStorage.setItem(sessionKey, JSON.stringify({ loggedIn: true, username: sessionData.username }));
+                    
+                    // Clear URL parameters and reload dashboard
+                    window.location.replace(redirectUrl);
+                    return;
+                } else if (authSuccess === 'false') {
+                    // Show error message on the login screen
+                    showMessage('❌ ' + (decodeURIComponent(message) || 'Login failed.'), 'error');
+                    
+                    // Clear URL parameters
+                    window.history.replaceState(null, '', redirectUrl);
+                }
+            }
+            
+            // 2. Check if already logged in (Actual Dashboard rendering)
             const session = JSON.parse(sessionStorage.getItem(sessionKey));
             
             if (session && session.loggedIn) {
