@@ -156,8 +156,7 @@
 
     <script>
         // --- 1. CONFIGURATION: Apps Script URL (UPDATED) ---
-        // Apps Script's GET Handler is now used for everything (Login/Data Fetch/Redirect)
-        const API_URL = 'https://script.google.com/macros/s/AKfycbwpM84rSRsrkjMOJm_m84hdZUlC5GIgkWrliFcW8nXKEpHfcy_jt_GNkbq-o15pCma8QA/exec'; 
+        const API_URL ='https://script.google.com/macros/s/AKfycbwpM84rSRsrkjMOJm_m84hdZUlC5GIgkWrliFcW8nXKEpHfcy_jt_GNkbq-o15pCma8QA/exec'; 
         
         // --- 2. GLOBAL STATE ---
         let allLinksData = [];
@@ -165,7 +164,6 @@
 
         // --- 3. UTILITY FUNCTIONS ---
         function getPermanentUrl(slug, password) {
-            // The permanent link points to the Apps Script doGet handler
             let url = `${API_URL}?s=${slug}`;
             if (password) {
                 url += `&p=${password}`;
