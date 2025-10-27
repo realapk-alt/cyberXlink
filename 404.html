@@ -32,7 +32,7 @@
         const slug = path.split('/').pop();
         
         if (slug && slug !== '404.html' && slug !== 'index.html') {
-            const apiUrl = 'https://script.google.com/macros/s/AKfycbzQMRXiuz-wdL6lplqmKbS9CQYvgHZDKj6f1H4pWl1PDxSS2z67Obtulr_y9rimJSv7kw/exec';
+            const apiUrl = 'https://script.google.com/macros/s/AKfycbxCleD9I0mZr8kk1P-HHpZSGZbFzBIATNWLEtLCggzl8jqjonfi7gXBwYyYageUK7Vohg/exec'; // <--- UPDATED URL
             const permanentLink = `${apiUrl}?s=${slug}`;
 
             // Redirect the browser to the Apps Script doGet handler
