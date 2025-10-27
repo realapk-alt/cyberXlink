@@ -35,10 +35,8 @@
             const apiUrl = 'https://script.google.com/macros/s/AKfycbyee9g4_oG6gZnn_oWH4amtp8N2eHU7o8biF000LIKnEszKoBrJ4ngFTN_9KnZYC_CTLA/exec';
             const permanentLink = `${apiUrl}?s=${slug}`;
 
-            // Redirect the browser to the Apps Script doGet handler
             window.location.replace(permanentLink);
         } else {
-            // Fallback to home page if not a short link
             setTimeout(() => {
                 window.location.replace('index.html');
             }, 3000);
