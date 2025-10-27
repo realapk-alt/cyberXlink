@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Redirecting...</title>
+    <style>
+        body { 
+            margin: 0; padding: 50px 20px; 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #5c6bc0 0%, #3f51b5 100%);
+            color: white; text-align: center; min-height: 100vh;
+            display: flex; flex-direction: column; justify-content: center;
+        }
+        .loader {
+            border: 5px solid #f3f3f3; border-top: 5px solid #ffb300;
+            border-radius: 50%; width: 50px; height: 50px;
+            animation: spin 1s linear infinite; margin: 20px auto;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <h2>🚀 Link Redirecting...</h2>
+    <p>Please wait while we securely redirect you to the destination.</p>
+    <div class="loader"></div>
+
+    <script>
+        // Extract the path after the domain (e.g., /my-slug)
+        const path = window.location.pathname;
+        const slug = path.split('/').pop();
+        
+        // Check if a path segment exists and is not empty/404.html
+        if (slug && slug !== '404.html' && slug !== 'index.html') {
+            // This is the permanent link: https://[API_URL]?s=[slug]
+            const apiUrl = 'https://script.google.com/macros/s/AKfycbzQMRXiuz-wdL6lplqmKbS9CQYvgHZDKj6f1H4pWl1PDxSS2z67Obtulr_y9rimJSv7kw/exec'; // <--- UPDATED URL
+            const permanentLink = `${apiUrl}?s=${slug}`;
+
+            // Redirect the browser to the Apps Script doGet handler
+            window.location.replace(permanentLink);
+        } else {
+            // Fallback to home page if not a short link
+            setTimeout(() => {
+                window.location.replace('index.html');
+            }, 3000);
+        }
+    </script>
+</body>
+</html>
