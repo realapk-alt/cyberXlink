@@ -28,12 +28,15 @@
     <div class="loader"></div>
 
     <script>
+        // Use the Vercel URL to handle the redirect
+        const VERCEL_FORWARDER_URL = 'https://link-forwarder-server.vercel.app'; 
+        
         const path = window.location.pathname;
         const slug = path.split('/').pop();
         
         if (slug && slug !== '404.html' && slug !== 'index.html') {
-            const apiUrl = 'https://script.google.com/macros/s/AKfycbyY89CgUXE6Ifu6Auqt7eOcpBvJmON1146bIFFx-kZkHgS6yJaHIANdl_hXqZM8tAb-Kg/exec';
-            const permanentLink = `${apiUrl}?s=${slug}`;
+            // Pass the slug directly to the Vercel server
+            const permanentLink = `${VERCEL_FORWARDER_URL}/${slug}`;
 
             window.location.replace(permanentLink);
         } else {
