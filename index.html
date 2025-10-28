@@ -3,7 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Link Manager Dashboard</title>
+    <title>Link Manager Dashboard (Firebase)</title>
+    
+    <script src="https://www.gstatic.com/firebasejs/8.6.8/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.6.8/firebase-database.js"></script> 
+    
     <style>
         :root {
             --primary: #5c6bc0; /* Indigo */
@@ -93,6 +97,7 @@
             <button class="btn-primary" onclick="handleLogin()" id="loginBtn">
                 <span id="loginBtnText">Login</span>
             </button>
+            <p style="margin-top: 20px; font-size: 12px; color: #666;">Use: **admin/123456**</p>
         </div>
     </div>
 
@@ -155,18 +160,36 @@
     </div>
 
     <script>
-        // --- 1. CONFIGURATION ---
-        const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyY89CgUXE6Ifu6Auqt7eOcpBvJmON1146bIFFx-kZkHgS6yJaHIANdl_hXqZM8tAb-Kg/exec'; 
-        const FORWARDER_URL = 'https://link-forwarder-server.vercel.app'; // <--- VERSEL FORWARDER URL
+        // --- 1. FIREBASE CONFIGURATION (Using your details) ---
+        const firebaseConfig = {
+            apiKey: "AIzaSyDWDlR8iOooisUPdGusb5wysG1fciHNexg",
+            authDomain: "cyberxlink-db.firebaseapp.com",
+            databaseURL: "https://cyberxlink-db-default-rtdb.firebaseio.com",
+            projectId: "cyberxlink-db",
+            storageBucket: "cyberxlink-db.firebasestorage.app",
+            messagingSenderId: "905454397308",
+            appId: "1:905454397308:web:8e1aa871d39609e339e6f9",
+        };
+
+        // Initialize Firebase and Database Reference
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
+        const linksRef = db.ref('links'); // Main reference for links
         
-        // --- 2. GLOBAL STATE ---
+        // --- 2. LOCAL ADMIN CONFIG ---
+        const ADMIN_USER = 'admin';
+        const ADMIN_PASS = '123456';
+
+        // --- 3. GLOBAL STATE ---
         let allLinksData = [];
         const sessionKey = 'linkAdminSession';
 
-        // --- 3. UTILITY FUNCTIONS ---
+        // --- 4. UTILITY FUNCTIONS ---
+        
         function getPermanentUrl(slug, password) {
-            // Permanent Link now points to the Vercel Forwarder
-            let url = `${FORWARDER_URL}/${slug}`; 
+            // Permanent Link is the GitHub Pages URL itself, plus slug (hash mode)
+            const baseUrl = window.location.origin + window.location.pathname.replace('index.html', '').replace(/\/$/, '');
+            let url = `${baseUrl}#/${slug}`; 
             if (password) {
                 url += `?p=${password}`;
             }
@@ -255,138 +278,139 @@
                 showMessage('Link copied to clipboard!', 'success', 'globalMessage');
             });
         }
-
-        // --- 4. CORE FETCH FUNCTIONS ---
-
-        // Helper to perform GET request and return JSON data (Apps Script)
-        async function fetchJsonData(queryString) {
-            const url = `${APPS_SCRIPT_URL}?${queryString}`;
-            try {
-                const response = await fetch(url);
-                return response.json();
-            } catch (error) {
-                throw new Error('Network/Server Connection Error.');
-            }
+        
+        // --- 5. FIREBASE BACKEND FUNCTIONS ---
+        
+        // Fetch all links from Firebase (Real-time listener)
+        function fetchLinks() {
+            // Real-time listener: updates 'allLinksData' whenever the database changes
+            linksRef.on('value', (snapshot) => {
+                const linksObject = snapshot.val() || {};
+                // Convert the object of links into an array
+                const linksArray = Object.keys(linksObject).map(key => linksObject[key]);
+                allLinksData = linksArray;
+                
+                // Redraw the UI
+                displayLinks();
+                updateStats();
+            }, (error) => {
+                 showMessage(`❌ Database Fetch Error: ${error.message}. Check Firebase Rules!`, 'error', 'globalMessage');
+            });
         }
 
-        async function fetchLinks() {
-            try {
-                // Show loading state
-                document.getElementById('linksList').innerHTML = '<p style="text-align: center; color: #667eea; padding: 40px;">Fetching links...</p>';
-                
-                // Fetch data using Apps Script URL
-                const result = await fetchJsonData('action=data');
-                
-                if (result.success) {
-                    allLinksData = result.data || [];
-                    displayLinks();
-                    updateStats();
-                } else {
-                    showMessage(`Error fetching links: ${result.message}`, 'error', 'globalMessage');
-                }
-            } catch (error) {
-                showMessage(`Error: ${error.message}`, 'error', 'globalMessage');
-            }
-        }
-
-        async function addNewLink() {
+        // Save new link to Firebase
+        function addNewLink() {
             const name = document.getElementById('linkName').value.trim();
             const url = document.getElementById('actualUrl').value.trim();
             const slug = document.getElementById('customSlug').value.trim().toLowerCase().replace(/[^a-z0-9-]/g, '');
             const password = document.getElementById('linkPassword').value.trim();
             
             // --- VALIDATION CHECK ---
-            if (!name || !url || !slug) {
-                showMessage('Please fill Link Name, Target URL, and Custom Slug.', 'error', 'globalMessage');
+            if (!name || !url || !slug || !url.startsWith('http')) {
+                showMessage('Please fill all fields correctly (URL must start with http).', 'error', 'globalMessage');
                 return;
             }
-            if (!url.startsWith('http')) {
-                showMessage('Target URL must start with http:// or https://', 'error', 'globalMessage');
+
+            // Check locally before writing (optimization)
+            if (allLinksData.some(link => link.slug === slug)) {
+                 showMessage('❌ This slug already exists.', 'error', 'globalMessage');
                 return;
             }
             
-            const btn = document.getElementById('createLinkBtn');
-            btn.disabled = true;
-            document.getElementById('createLinkBtnText').innerHTML = '<span class="loader"></span> Creating...';
+            const linkData = { 
+                slug: slug,
+                url: url,
+                name: name,
+                password: password,
+                clicks: 0,
+                created: new Date().toISOString()
+            };
 
-            const linkData = { name, actualUrl: url, slug, password };
-            const encodedLinkData = encodeURIComponent(JSON.stringify(linkData));
-            const queryString = `action=add&linkData=${encodedLinkData}`;
-
-            try {
-                const result = await fetchJsonData(queryString);
-
-                if (result.success) {
-                    showMessage('✅ ' + result.message, 'success', 'globalMessage');
+            // Write data using slug as the key
+            linksRef.child(slug).set(linkData)
+                .then(() => {
+                    showMessage('✅ Link created successfully!', 'success', 'globalMessage');
                     document.getElementById('linkName').value = document.getElementById('actualUrl').value = document.getElementById('customSlug').value = document.getElementById('linkPassword').value = '';
-                    await fetchLinks();
                     showSection('manager', document.querySelector('.nav-btn'));
-                } else {
-                    showMessage('❌ ' + result.message, 'error', 'globalMessage');
-                }
-            } catch (error) {
-                showMessage(`❌ Error: ${error.message}`, 'error', 'globalMessage');
-            } finally {
-                btn.disabled = false;
-                document.getElementById('createLinkBtnText').textContent = 'Create Permanent Link';
-            }
+                })
+                .catch(error => {
+                    showMessage('❌ Database Write Error: ' + error.message, 'error', 'globalMessage');
+                });
         }
 
-        async function deleteLink(slug) {
+        // Delete link from Firebase
+        function deleteLink(slug) {
             if (!confirm(`Are you sure you want to delete the link with slug: ${slug}?`)) return;
 
-            const queryString = `action=delete&slug=${slug}`;
-            try {
-                const result = await fetchJsonData(queryString);
-
-                if (result.success) {
-                    showMessage('✅ ' + result.message, 'success', 'globalMessage');
-                    await fetchLinks();
-                } else {
-                    showMessage('❌ ' + result.message, 'error', 'globalMessage');
-                }
-            } catch (error) {
-                showMessage(`❌ Error: ${error.message}`, 'error', 'globalMessage');
-            }
+            linksRef.child(slug).remove()
+                .then(() => {
+                    showMessage('✅ Link deleted successfully!', 'success', 'globalMessage');
+                })
+                .catch(error => {
+                    showMessage('❌ Database Delete Error: ' + error.message, 'error', 'globalMessage');
+                });
         }
 
-        // --- 5. AUTHENTICATION (Uses Window Location Redirect) ---
+        // --- 6. REDIRECT CHECKER (For Permanent Links) ---
+
+        function checkRedirect() {
+            const hashPath = window.location.hash;
+            if (hashPath.startsWith('#/')) {
+                const parts = hashPath.substring(2).split('?');
+                const slug = parts[0];
+                const password = (parts.length > 1) ? new URLSearchParams(parts[1]).get('p') : null;
+                
+                // We fetch the link directly using a one-time promise
+                linksRef.child(slug).once('value')
+                    .then(snapshot => {
+                        const link = snapshot.val();
+                        if (link) {
+                            if (link.password && link.password !== password) {
+                                alert("🔒 Incorrect password for this link.");
+                                window.location.hash = '';
+                                return;
+                            }
+                            
+                            // Update clicks before redirecting
+                            linksRef.child(slug).update({ clicks: (link.clicks || 0) + 1 });
+                            
+                            // FINAL REDIRECT (Client-side, 100% reliable)
+                            window.location.replace(link.url);
+                        } else {
+                            // Link not found, clear hash
+                            window.location.hash = '';
+                            alert('❌ Error: Link not found.');
+                        }
+                    })
+                    .catch(error => {
+                        console.error("Redirect check failed:", error);
+                        window.location.hash = '';
+                    });
+                
+                return true; // Indicates redirect logic is running
+            }
+            return false;
+        }
+
+        // --- 7. AUTHENTICATION & Initialization ---
 
         function handleLogin() {
             const username = document.getElementById('username').value.trim();
             const password = document.getElementById('password').value;
             
-            if (!username || !password) {
-                showMessage('Please enter both username and password.');
-                return;
+            if (username === ADMIN_USER && password === ADMIN_PASS) {
+                sessionStorage.setItem(sessionKey, JSON.stringify({ loggedIn: true, username: ADMIN_USER }));
+                showMessage('✅ Login successful!', 'success');
+                setTimeout(() => renderDashboard(), 500);
+            } else {
+                showMessage('❌ Invalid username or password.', 'error');
             }
-
-            const loginUrl = `${APPS_SCRIPT_URL}?action=login&username=${username}&password=${password}`;
-            
-            window.location.href = loginUrl;
         }
 
-        // --- 6. INITIALIZATION & Session Handling ---
-        
         function renderDashboard() {
-            const urlParams = new URLSearchParams(window.location.search);
-            const authSuccess = urlParams.get('auth_success');
-            const message = urlParams.get('message');
-            const userData = urlParams.get('user');
-
-            if (authSuccess !== null) {
-                const redirectUrl = window.location.origin + window.location.pathname;
-                
-                if (authSuccess === 'true' && userData) {
-                    const sessionData = JSON.parse(decodeURIComponent(userData));
-                    sessionStorage.setItem(sessionKey, JSON.stringify({ loggedIn: true, username: sessionData.username }));
-                    
-                    window.location.replace(redirectUrl);
-                    return;
-                } else if (authSuccess === 'false') {
-                    showMessage('❌ ' + (decodeURIComponent(message) || 'Login failed.'), 'error');
-                    window.history.replaceState(null, '', redirectUrl);
-                }
+            // If hash is present, run redirect logic and stop dashboard rendering
+            if (checkRedirect()) {
+                return; 
             }
             
             const session = JSON.parse(sessionStorage.getItem(sessionKey));
@@ -395,7 +419,8 @@
                 document.getElementById('loginScreen').style.display = 'none';
                 document.getElementById('dashboardScreen').style.display = 'block';
                 document.getElementById('userBadge').textContent = `Welcome, ${session.username}`;
-                fetchLinks();
+                // Start real-time fetching of links
+                fetchLinks(); 
             } else {
                 document.getElementById('loginScreen').style.display = 'flex';
                 document.getElementById('dashboardScreen').style.display = 'none';
@@ -404,9 +429,10 @@
 
         function logout() {
             sessionStorage.removeItem(sessionKey);
+            window.location.hash = '';
             window.location.reload();
         }
-
+        
         // Initial check on load
         renderDashboard();
     </script>
