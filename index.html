@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Link Manager Dashboard (Firebase)</title>
+    <title>Professional Link Manager</title>
     
     <script src="https://www.gstatic.com/firebasejs/8.6.8/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.6.8/firebase-database.js"></script> 
@@ -16,21 +16,23 @@
             --text-color: #212121;
             --bg-light: #f5f5f5;
             --bg-dark: #ffffff;
+            --danger: #e57373;
+            --success: #4caf50;
         }
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
         body { background: var(--bg-light); color: var(--text-color); min-height: 100vh; }
         
-        /* Login Screen */
+        /* Login Screen - Enhanced Design */
         #loginScreen {
             background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
             display: flex; align-items: center; justify-content: center; height: 100vh; padding: 20px;
         }
         .login-card { 
             background: var(--bg-dark); padding: 40px; border-radius: 12px; 
-            box-shadow: 0 10px 25px rgba(0,0,0,0.1); width: 100%; max-width: 380px; 
+            box-shadow: 0 15px 40px rgba(0,0,0,0.3); width: 100%; max-width: 400px; 
             text-align: center;
         }
-        .login-card h2 { color: var(--primary-dark); margin-bottom: 20px; font-weight: 600; }
+        .login-card h2 { color: var(--primary); margin-bottom: 25px; font-weight: 700; }
         .form-group { margin-bottom: 20px; text-align: left; }
         label { display: block; margin-bottom: 6px; font-weight: 500; font-size: 14px; }
         input[type="text"], input[type="password"], input[type="url"] { 
@@ -45,46 +47,42 @@
         }
         .btn-primary:hover:not(:disabled) { background: var(--primary-dark); }
         .btn-primary:disabled { background: #bdbdbd; cursor: not-allowed; }
-        .message-box { padding: 10px; border-radius: 4px; margin: 15px 0; font-size: 14px; display: none; }
-        .error { background: #ffebee; color: #c62828; border: 1px solid #ef9a9a; }
-        .success { background: #e8f5e9; color: #388e3c; border: 1px solid #a5d6a7; }
-        .loader { width: 16px; height: 16px; border: 2px solid #f3f3f3; border-top: 2px solid white; border-radius: 50%; animation: spin 1s linear infinite; display: inline-block; margin-right: 8px; }
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-
+        
         /* Dashboard Layout */
         #dashboardScreen { display: none; }
         .header { background: var(--primary); color: white; padding: 15px 30px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
-        .header h1 { font-size: 24px; }
         .nav-bar { background: var(--bg-dark); padding: 10px 30px; border-bottom: 1px solid #eee; display: flex; gap: 15px; }
-        .nav-btn { background: none; border: none; color: var(--text-color); padding: 8px 15px; border-radius: 4px; cursor: pointer; font-weight: 500; transition: background 0.2s; }
         .nav-btn.active { background: var(--primary); color: white; }
-        .nav-btn:hover:not(.active) { background: var(--bg-light); }
         .container { padding: 30px; max-width: 1000px; margin: 0 auto; }
         .card { background: var(--bg-dark); padding: 25px; border-radius: 8px; box-shadow: 0 4px 8px rgba(0,0,0,0.05); margin-bottom: 25px; }
         
-        /* Stats */
-        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-bottom: 30px; }
-        .stat-item { background: var(--bg-dark); padding: 20px; border-radius: 8px; text-align: center; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
-        .stat-number { font-size: 2.5em; font-weight: bold; color: var(--accent); }
-        .stat-label { font-size: 14px; color: #666; }
-
         /* Link List */
         .link-item { border: 1px solid #eee; border-left: 5px solid var(--primary); padding: 15px; border-radius: 4px; margin-bottom: 15px; }
-        .link-info { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
-        .link-info strong { font-size: 16px; }
         .link-url { background: #f0f0f0; padding: 8px; border-radius: 4px; font-size: 14px; word-break: break-all; margin-top: 8px; }
         .btn-small { padding: 6px 12px; font-size: 13px; border-radius: 4px; margin-left: 5px; cursor: pointer; }
-        .btn-copy { background: #607d8b; color: white; border: none; }
-        .btn-delete { background: #e57373; color: white; border: none; }
-        .badge { background: var(--accent); color: var(--text-color); padding: 3px 8px; border-radius: 12px; font-size: 11px; margin-left: 10px; font-weight: 600; }
+        .btn-delete { background: var(--danger); color: white; border: none; }
+        .btn-edit { background: var(--accent); color: var(--text-color); border: none; }
         .security-badge { background: #e0f2f1; color: #00796b; padding: 3px 8px; border-radius: 4px; font-size: 12px; margin-left: 10px; }
+        
+        /* Modal */
+        .modal-overlay { 
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
+            background: rgba(0,0,0,0.6); display: none; justify-content: center; align-items: center; 
+            z-index: 1000;
+        }
+        .modal-content { 
+            background: white; padding: 30px; border-radius: 10px; max-width: 500px; 
+            width: 90%; box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+        }
+        .modal-content h3 { color: var(--primary-dark); margin-bottom: 20px; }
+        .footer { text-align: center; padding: 10px 0; font-size: 12px; color: #888; }
     </style>
 </head>
 <body>
 
     <div id="loginScreen">
         <div class="login-card">
-            <h2>🔗 Link Manager Login</h2>
+            <h2>🔗 Admin Access</h2>
             <div id="loginMessage" class="message-box"></div>
             <div class="form-group">
                 <label for="username">👤 Username</label>
@@ -97,7 +95,6 @@
             <button class="btn-primary" onclick="handleLogin()" id="loginBtn">
                 <span id="loginBtnText">Login</span>
             </button>
-            <p style="margin-top: 20px; font-size: 12px; color: #666;">Use: **admin/123456**</p>
         </div>
     </div>
 
@@ -106,7 +103,7 @@
             <h1>🔗 Link Manager</h1>
             <div style="display: flex; align-items: center;">
                 <span style="font-size: 14px; margin-right: 15px;" id="userBadge">Welcome, Admin</span>
-                <button class="btn-primary btn-small" style="background: #e57373;" onclick="logout()">Logout</button>
+                <button class="btn-primary btn-small" style="background: var(--danger);" onclick="logout()">Logout</button>
             </div>
         </div>
         
@@ -158,9 +155,39 @@
             </div>
         </div>
     </div>
+    
+    <div id="editModal" class="modal-overlay">
+        <div class="modal-content">
+            <h3>✏️ Edit Link Details</h3>
+            <p style="color: var(--danger); font-size: 14px; margin-bottom: 15px;">Permanent Link (Slug) will NOT change.</p>
+            <div class="form-group">
+                <label for="editLinkName">📝 Link Name</label>
+                <input type="text" id="editLinkName">
+            </div>
+            <div class="form-group">
+                <label for="editActualUrl">🌐 Target URL</label>
+                <input type="url" id="editActualUrl">
+            </div>
+            <div class="form-group">
+                <label for="editLinkPassword">🔒 Access Password</label>
+                <input type="text" id="editLinkPassword">
+            </div>
+            <button class="btn-primary" style="background: var(--success);" onclick="saveEditedLink()">
+                Save Changes
+            </button>
+            <button class="btn-primary" style="background: #999; margin-top: 5px;" onclick="document.getElementById('editModal').style.display='none'">
+                Cancel
+            </button>
+            <input type="hidden" id="editSlugHidden">
+        </div>
+    </div>
+    
+    <div class="footer">
+        © Copyright - REAL APK
+    </div>
 
     <script>
-        // --- 1. FIREBASE CONFIGURATION (Using your details) ---
+        // --- 1. FIREBASE CONFIGURATION (Your Details) ---
         const firebaseConfig = {
             apiKey: "AIzaSyDWDlR8iOooisUPdGusb5wysG1fciHNexg",
             authDomain: "cyberxlink-db.firebaseapp.com",
@@ -174,20 +201,17 @@
         // Initialize Firebase and Database Reference
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
-        const linksRef = db.ref('links'); // Main reference for links
+        const linksRef = db.ref('links'); 
+        const usersRef = db.ref('users'); // Reference to the users for multi-login
         
-        // --- 2. LOCAL ADMIN CONFIG ---
-        const ADMIN_USER = 'admin';
-        const ADMIN_PASS = '123456';
-
-        // --- 3. GLOBAL STATE ---
+        // --- 2. GLOBAL STATE ---
         let allLinksData = [];
         const sessionKey = 'linkAdminSession';
 
-        // --- 4. UTILITY FUNCTIONS ---
+        // --- 3. UTILITY FUNCTIONS ---
         
         function getPermanentUrl(slug, password) {
-            // Permanent Link is the GitHub Pages URL itself, plus slug (hash mode)
+            // Permanent Link uses the GitHub Pages URL itself (hash mode)
             const baseUrl = window.location.origin + window.location.pathname.replace('index.html', '').replace(/\/$/, '');
             let url = `${baseUrl}#/${slug}`; 
             if (password) {
@@ -220,7 +244,7 @@
         function updateStats() {
             const total = allLinksData.length;
             const totalClicks = allLinksData.reduce((sum, link) => sum + (parseInt(link.clicks) || 0), 0);
-            const protectedCount = allLinksData.filter(link => link.password).length;
+            const protectedCount = allLinksData.filter(link => link.password && link.password.length > 0).length;
             
             document.getElementById('totalLinks').textContent = total;
             document.getElementById('totalClicks').textContent = totalClicks;
@@ -260,7 +284,10 @@
                             <button class="btn-primary btn-small btn-copy" onclick="copyToClipboard('${permanentUrl}')">
                                 📋 Copy Link
                             </button>
-                            <button class="btn-primary btn-small" style="background: #4caf50;" onclick="window.open('${permanentUrl}', '_blank')">
+                            <button class="btn-primary btn-small btn-edit" onclick="openEditModal('${link.slug}')">
+                                ✏️ Edit
+                            </button>
+                            <button class="btn-primary btn-small" style="background: var(--success);" onclick="window.open('${permanentUrl}', '_blank')">
                                 🧪 Test
                             </button>
                             <button class="btn-primary btn-small btn-delete" onclick="deleteLink('${link.slug}')">
@@ -279,39 +306,19 @@
             });
         }
         
-        // --- 5. FIREBASE BACKEND FUNCTIONS ---
-        
-        // Fetch all links from Firebase (Real-time listener)
-        function fetchLinks() {
-            // Real-time listener: updates 'allLinksData' whenever the database changes
-            linksRef.on('value', (snapshot) => {
-                const linksObject = snapshot.val() || {};
-                // Convert the object of links into an array
-                const linksArray = Object.keys(linksObject).map(key => linksObject[key]);
-                allLinksData = linksArray;
-                
-                // Redraw the UI
-                displayLinks();
-                updateStats();
-            }, (error) => {
-                 showMessage(`❌ Database Fetch Error: ${error.message}. Check Firebase Rules!`, 'error', 'globalMessage');
-            });
-        }
+        // --- 6. LINK CRUD OPERATIONS ---
 
-        // Save new link to Firebase
         function addNewLink() {
             const name = document.getElementById('linkName').value.trim();
             const url = document.getElementById('actualUrl').value.trim();
             const slug = document.getElementById('customSlug').value.trim().toLowerCase().replace(/[^a-z0-9-]/g, '');
             const password = document.getElementById('linkPassword').value.trim();
             
-            // --- VALIDATION CHECK ---
             if (!name || !url || !slug || !url.startsWith('http')) {
                 showMessage('Please fill all fields correctly (URL must start with http).', 'error', 'globalMessage');
                 return;
             }
 
-            // Check locally before writing (optimization)
             if (allLinksData.some(link => link.slug === slug)) {
                  showMessage('❌ This slug already exists.', 'error', 'globalMessage');
                 return;
@@ -326,7 +333,6 @@
                 created: new Date().toISOString()
             };
 
-            // Write data using slug as the key
             linksRef.child(slug).set(linkData)
                 .then(() => {
                     showMessage('✅ Link created successfully!', 'success', 'globalMessage');
@@ -337,8 +343,7 @@
                     showMessage('❌ Database Write Error: ' + error.message, 'error', 'globalMessage');
                 });
         }
-
-        // Delete link from Firebase
+        
         function deleteLink(slug) {
             if (!confirm(`Are you sure you want to delete the link with slug: ${slug}?`)) return;
 
@@ -350,17 +355,109 @@
                     showMessage('❌ Database Delete Error: ' + error.message, 'error', 'globalMessage');
                 });
         }
+        
+        // --- 7. EDIT MODAL LOGIC (New Feature) ---
+        
+        let currentEditingSlug = null;
 
-        // --- 6. REDIRECT CHECKER (For Permanent Links) ---
+        function openEditModal(slug) {
+            const link = allLinksData.find(l => l.slug === slug);
+            if (!link) return;
+
+            currentEditingSlug = slug;
+            document.getElementById('editSlugHidden').value = slug;
+            document.getElementById('editLinkName').value = link.name;
+            document.getElementById('editActualUrl').value = link.url;
+            document.getElementById('editLinkPassword').value = link.password || '';
+            document.getElementById('editModal').style.display = 'flex';
+        }
+
+        function saveEditedLink() {
+            if (!currentEditingSlug) return;
+            
+            const newName = document.getElementById('editLinkName').value.trim();
+            const newUrl = document.getElementById('editActualUrl').value.trim();
+            const newPassword = document.getElementById('editLinkPassword').value.trim();
+            
+            if (!newName || !newUrl || !newUrl.startsWith('http')) {
+                alert("Please ensure Name and valid Target URL are provided.");
+                return;
+            }
+
+            // Update only the mutable fields in Firebase
+            linksRef.child(currentEditingSlug).update({
+                name: newName,
+                url: newUrl, // Target URL is updated
+                password: newPassword,
+                // Slug and Clicks remain unchanged!
+            })
+            .then(() => {
+                showMessage('✅ Link updated successfully!', 'success', 'globalMessage');
+                document.getElementById('editModal').style.display = 'none';
+            })
+            .catch(error => {
+                showMessage('❌ Update Error: ' + error.message, 'error', 'globalMessage');
+            });
+        }
+
+
+        // --- 8. AUTHENTICATION (Firebase Login) ---
+
+        function handleLogin() {
+            const username = document.getElementById('username').value.trim();
+            const password = document.getElementById('password').value;
+            const loginBtn = document.getElementById('loginBtn');
+            
+            if (!username || !password) {
+                showMessage('Please enter both username and password.', 'error');
+                return;
+            }
+
+            loginBtn.disabled = true;
+            document.getElementById('loginBtnText').innerHTML = '<span class="loader"></span> Authenticating...';
+
+            usersRef.orderByChild('username').equalTo(username).once('value')
+                .then(snapshot => {
+                    loginBtn.disabled = false;
+                    document.getElementById('loginBtnText').textContent = 'Login';
+                    
+                    const users = snapshot.val();
+                    
+                    if (users) {
+                        for (let key in users) {
+                            const user = users[key];
+                            if (user.password === password) {
+                                sessionStorage.setItem(sessionKey, JSON.stringify({ loggedIn: true, username: user.username }));
+                                showMessage(`✅ Login successful! Welcome, ${user.username}`, 'success');
+                                setTimeout(() => renderDashboard(), 500);
+                                return;
+                            }
+                        }
+                    }
+                    
+                    showMessage('❌ Invalid username or password.', 'error');
+                    
+                })
+                .catch(error => {
+                    loginBtn.disabled = false;
+                    document.getElementById('loginBtnText').textContent = 'Login';
+                    showMessage('❌ Database Error: Could not verify login.', 'error');
+                    console.error("Login verification failed:", error);
+                });
+        }
+
+
+        // --- 9. REDIRECT CHECKER & INITIALIZATION ---
 
         function checkRedirect() {
+            // Check for slug in the URL Hash (e.g., #/my-slug)
             const hashPath = window.location.hash;
             if (hashPath.startsWith('#/')) {
                 const parts = hashPath.substring(2).split('?');
                 const slug = parts[0];
                 const password = (parts.length > 1) ? new URLSearchParams(parts[1]).get('p') : null;
                 
-                // We fetch the link directly using a one-time promise
+                // Fetch the link data from Firebase
                 linksRef.child(slug).once('value')
                     .then(snapshot => {
                         const link = snapshot.val();
@@ -371,13 +468,10 @@
                                 return;
                             }
                             
-                            // Update clicks before redirecting
+                            // Update clicks and redirect
                             linksRef.child(slug).update({ clicks: (link.clicks || 0) + 1 });
-                            
-                            // FINAL REDIRECT (Client-side, 100% reliable)
                             window.location.replace(link.url);
                         } else {
-                            // Link not found, clear hash
                             window.location.hash = '';
                             alert('❌ Error: Link not found.');
                         }
@@ -387,28 +481,12 @@
                         window.location.hash = '';
                     });
                 
-                return true; // Indicates redirect logic is running
+                return true;
             }
             return false;
         }
 
-        // --- 7. AUTHENTICATION & Initialization ---
-
-        function handleLogin() {
-            const username = document.getElementById('username').value.trim();
-            const password = document.getElementById('password').value;
-            
-            if (username === ADMIN_USER && password === ADMIN_PASS) {
-                sessionStorage.setItem(sessionKey, JSON.stringify({ loggedIn: true, username: ADMIN_USER }));
-                showMessage('✅ Login successful!', 'success');
-                setTimeout(() => renderDashboard(), 500);
-            } else {
-                showMessage('❌ Invalid username or password.', 'error');
-            }
-        }
-
         function renderDashboard() {
-            // If hash is present, run redirect logic and stop dashboard rendering
             if (checkRedirect()) {
                 return; 
             }
@@ -420,7 +498,13 @@
                 document.getElementById('dashboardScreen').style.display = 'block';
                 document.getElementById('userBadge').textContent = `Welcome, ${session.username}`;
                 // Start real-time fetching of links
-                fetchLinks(); 
+                linksRef.on('value', (snapshot) => {
+                    const linksObject = snapshot.val() || {};
+                    const linksArray = Object.keys(linksObject).map(key => linksObject[key]);
+                    allLinksData = linksArray;
+                    displayLinks();
+                    updateStats();
+                });
             } else {
                 document.getElementById('loginScreen').style.display = 'flex';
                 document.getElementById('dashboardScreen').style.display = 'none';
