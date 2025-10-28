@@ -2,48 +2,23 @@
 <html>
 <head>
     <meta charset="UTF-8">
-    <title>Redirecting...</title>
-    <style>
-        body { 
-            margin: 0; padding: 50px 20px; 
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #5c6bc0 0%, #3f51b5 100%);
-            color: white; text-align: center; min-height: 100vh;
-            display: flex; flex-direction: column; justify-content: center;
-        }
-        .loader {
-            border: 5px solid #f3f3f3; border-top: 5px solid #ffb300;
-            border-radius: 50%; width: 50px; height: 50px;
-            animation: spin 1s linear infinite; margin: 20px auto;
-        }
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-    </style>
-</head>
-<body>
-    <h2>🚀 Link Redirecting...</h2>
-    <p>Please wait while we securely redirect you to the destination.</p>
-    <div class="loader"></div>
-
+    <title>Loading Link...</title>
     <script>
-        // Use the Vercel URL to handle the redirect
-        const VERCEL_FORWARDER_URL = 'https://link-forwarder-server.vercel.app'; 
-        
-        const path = window.location.pathname;
-        const slug = path.split('/').pop();
-        
-        if (slug && slug !== '404.html' && slug !== 'index.html') {
-            // Pass the slug directly to the Vercel server
-            const permanentLink = `${VERCEL_FORWARDER_URL}/${slug}`;
+        // Extracts the slug from a 404 path (e.g., /cyberXlink/my-slug)
+        const path = window.location.pathname.replace('404.html', '');
+        const slug = path.split('/').filter(p => p).pop(); 
 
-            window.location.replace(permanentLink);
+        // Redirects any 404 URL path to the index.html and appends the slug to the hash
+        if (slug) {
+            // Redirect to index.html and append the slug to the hash
+            window.location.replace(path.replace(slug, '') + 'index.html#/' + slug + window.location.search);
         } else {
-            setTimeout(() => {
-                window.location.replace('index.html');
-            }, 3000);
+            // Default to index page
+            window.location.replace(path + 'index.html');
         }
     </script>
+</head>
+<body>
+    <p>Loading the link manager...</p>
 </body>
 </html>
