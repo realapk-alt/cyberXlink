@@ -155,8 +155,9 @@
     </div>
 
     <script>
-        // --- 1. CONFIGURATION: Apps Script URL (UPDATED) ---
-        const API_URL = 'https://script.google.com/macros/s/AKfycbyY89CgUXE6Ifu6Auqt7eOcpBvJmON1146bIFFx-kZkHgS6yJaHIANdl_hXqZM8tAb-Kg/exec'; 
+        // --- 1. CONFIGURATION ---
+        const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyY89CgUXE6Ifu6Auqt7eOcpBvJmON1146bIFFx-kZkHgS6yJaHIANdl_hXqZM8tAb-Kg/exec'; 
+        const FORWARDER_URL = 'https://link-forwarder-server.vercel.app'; // <--- VERSEL FORWARDER URL
         
         // --- 2. GLOBAL STATE ---
         let allLinksData = [];
@@ -164,9 +165,10 @@
 
         // --- 3. UTILITY FUNCTIONS ---
         function getPermanentUrl(slug, password) {
-            let url = `${API_URL}?s=${slug}`;
+            // Permanent Link now points to the Vercel Forwarder
+            let url = `${FORWARDER_URL}/${slug}`; 
             if (password) {
-                url += `&p=${password}`;
+                url += `?p=${password}`;
             }
             return url;
         }
@@ -231,15 +233,15 @@
                         <div class="link-url" style="color: var(--primary-dark); font-weight: 500;">
                             ${permanentUrl}
                         </div>
-                        <div style="margin-top: 10px;">
+                        <div class="link-actions">
                             <button class="btn-primary btn-small btn-copy" onclick="copyToClipboard('${permanentUrl}')">
-                                Copy Link
+                                📋 Copy Link
                             </button>
                             <button class="btn-primary btn-small" style="background: #4caf50;" onclick="window.open('${permanentUrl}', '_blank')">
-                                Test
+                                🧪 Test
                             </button>
                             <button class="btn-primary btn-small btn-delete" onclick="deleteLink('${link.slug}')">
-                                Delete
+                                🗑️ Delete
                             </button>
                         </div>
                     </div>
@@ -254,11 +256,11 @@
             });
         }
 
-        // --- 4. CORE FETCH FUNCTIONS (NOW USING GET) ---
+        // --- 4. CORE FETCH FUNCTIONS ---
 
-        // Helper to perform GET request and return JSON data
+        // Helper to perform GET request and return JSON data (Apps Script)
         async function fetchJsonData(queryString) {
-            const url = `${API_URL}?${queryString}`;
+            const url = `${APPS_SCRIPT_URL}?${queryString}`;
             try {
                 const response = await fetch(url);
                 return response.json();
@@ -272,6 +274,7 @@
                 // Show loading state
                 document.getElementById('linksList').innerHTML = '<p style="text-align: center; color: #667eea; padding: 40px;">Fetching links...</p>';
                 
+                // Fetch data using Apps Script URL
                 const result = await fetchJsonData('action=data');
                 
                 if (result.success) {
@@ -292,17 +295,13 @@
             const slug = document.getElementById('customSlug').value.trim().toLowerCase().replace(/[^a-z0-9-]/g, '');
             const password = document.getElementById('linkPassword').value.trim();
             
-            // --- FINAL VALIDATION CHECK ---
+            // --- VALIDATION CHECK ---
             if (!name || !url || !slug) {
                 showMessage('Please fill Link Name, Target URL, and Custom Slug.', 'error', 'globalMessage');
                 return;
             }
             if (!url.startsWith('http')) {
                 showMessage('Target URL must start with http:// or https://', 'error', 'globalMessage');
-                return;
-            }
-            if (slug.includes(' ')) {
-                showMessage('Slug cannot contain spaces.', 'error', 'globalMessage');
                 return;
             }
             
@@ -362,7 +361,7 @@
                 return;
             }
 
-            const loginUrl = `${API_URL}?action=login&username=${username}&password=${password}`;
+            const loginUrl = `${APPS_SCRIPT_URL}?action=login&username=${username}&password=${password}`;
             
             window.location.href = loginUrl;
         }
