@@ -10,7 +10,7 @@
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
     
     <style>
-        /* Neumorphism Colors and Styles */
+        /* ... (CSS Styles remain the same) ... */
         :root {
             --bg-color: #e0e5ec;
             --primary-text: #666;
@@ -293,7 +293,6 @@
             try {
                 document.getElementById('verificationStatus').textContent = 'Verification: Checking token...';
                 
-                // Path changed to check directly under the root: verification_codes/CODE
                 const codeRef = database.ref(`verification_codes/${verificationCode}`);
                 const deviceRef = database.ref(`app_users/${deviceId}`);
                 const currentTime = Date.now();
@@ -318,14 +317,18 @@
                     return;
                 }
 
-                // --- FIX: CODE DELETION LOGIC (DIALOG FIX) ---
-                // 1. Mark device as verified (Persistent Flag)
-                await deviceRef.set({ verification_time: currentTime, last_active: currentTime });
+                // --- CORE FIX: DIALOGUE AND PERSISTENT FLAG ---
                 
-                // 2. Permanently DELETE the verification code to stop the app dialog
+                // 1. Mark device as permanently verified (New Flag Fix)
+                await deviceRef.update({ 
+                    verification_time: currentTime, 
+                    last_active: currentTime,
+                    is_permanently_verified: true // <-- NEW FLAG SET
+                });
+                
+                // 2. Delete the verification code (Previous Fix)
+                // This ensures the App/Dex logic stops checking for the code's existence.
                 await codeRef.remove(); 
-                // Note: We remove it instead of updating 'used: true' because the app logic 
-                // relies on the code's ABSENCE to confirm success.
                 // ----------------------------------------------------
 
                 document.getElementById('verificationStatus').textContent = 'Verification: Complete!';
