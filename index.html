@@ -10,7 +10,7 @@
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
     
     <style>
-        /* Neumorphism Colors */
+        /* Neumorphism Colors and Styles */
         :root {
             --bg-color: #e0e5ec;
             --primary-text: #666;
@@ -21,7 +21,6 @@
             --shadow-dark: #a3b1c6;
         }
 
-        /* General Styling */
         * {
             margin: 0;
             padding: 0;
@@ -46,7 +45,6 @@
             text-align: center;
             border-radius: 20px;
             background: var(--bg-color);
-            /* Raised Effect */
             box-shadow: 10px 10px 20px var(--shadow-dark),
                         -10px -10px 20px var(--shadow-light);
         }
@@ -64,13 +62,11 @@
             color: var(--main-accent);
         }
 
-        /* Device Info Box - "Pressed" Effect */
         .device-info {
             padding: 20px;
             margin: 30px 0;
             text-align: left;
             border-radius: 10px;
-            /* Pressed Neumorphism Effect */
             background: #ccd5e0;
             box-shadow: inset 5px 5px 10px var(--shadow-dark),
                         inset -5px -5px 10px var(--shadow-light);
@@ -97,7 +93,6 @@
             max-width: 50%; 
         }
         
-        /* Status Box Styling */
         .status-box {
             padding: 15px 20px;
             margin: 25px 0;
@@ -153,7 +148,6 @@
             transition: width 3s linear;
         }
         
-        /* Button Style - Interactive Pressed Effect */
         .btn {
             padding: 12px 25px;
             border: none;
@@ -178,7 +172,6 @@
         
         .hidden { display: none; }
 
-        /* Debug Info */
         #debugInfo {
             font-size: 11px; 
             color: var(--shadow-dark); 
@@ -189,7 +182,6 @@
         }
         #debugInfo strong { color: var(--primary-text); }
 
-        /* Mobile Responsiveness */
         @media (max-width: 500px) {
             .container { padding: 30px 20px; border-radius: 15px; }
             h1 { font-size: 20px; }
@@ -293,7 +285,6 @@
 
         // 4. Verification Logic
         async function verifyDevice() {
-            // Check: only deviceId and verificationCode are needed
             if (!deviceId || !verificationCode) {
                 showError('Missing device ID or access token in URL.');
                 return;
@@ -302,7 +293,6 @@
             try {
                 document.getElementById('verificationStatus').textContent = 'Verification: Checking token...';
                 
-                // *** IMPORTANT: PATH MODIFIED FOR FLAT STRUCTURE ***
                 // Path changed to check directly under the root: verification_codes/CODE
                 const codeRef = database.ref(`verification_codes/${verificationCode}`);
                 const deviceRef = database.ref(`app_users/${deviceId}`);
@@ -328,9 +318,15 @@
                     return;
                 }
 
-                // Update data in Firebase
-                await codeRef.update({ used: true, used_at: currentTime });
+                // --- FIX: CODE DELETION LOGIC (DIALOG FIX) ---
+                // 1. Mark device as verified (Persistent Flag)
                 await deviceRef.set({ verification_time: currentTime, last_active: currentTime });
+                
+                // 2. Permanently DELETE the verification code to stop the app dialog
+                await codeRef.remove(); 
+                // Note: We remove it instead of updating 'used: true' because the app logic 
+                // relies on the code's ABSENCE to confirm success.
+                // ----------------------------------------------------
 
                 document.getElementById('verificationStatus').textContent = 'Verification: Complete!';
                 showSuccess();
