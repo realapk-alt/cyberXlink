@@ -244,7 +244,6 @@
         <div class="device-info">
             <p><span class="info-label">Device ID:</span> <span class="info-value" id="deviceId">Loading...</span></p>
             <p><span class="info-label">Access Token:</span> <span class="info-value" id="verificationCode">Loading...</span></p>
-            <p><span class="info-label">Client Ref:</span> <span class="info-value" id="userBase">Loading...</span></p>
         </div>
         
         <div class="countdown">
@@ -265,7 +264,7 @@
     </div>
 
     <script>
-        // 2. FIREBASE CONFIGURATION ADDED HERE
+        // 2. FIREBASE CONFIGURATION (FINAL)
         const firebaseConfig = {
           apiKey: "AIzaSyBeHXB_9nHTWofFeXKOVUlQYCrB4YhAx_w",
           authDomain: "real-apk-pin.firebaseapp.com",
@@ -277,7 +276,7 @@
           measurementId: "G-LPNCNHPYPF"
         };
 
-        // 3. Initialize Firebase and get Database instance
+        // 3. Initialize Firebase
         firebase.initializeApp(firebaseConfig);
         const database = firebase.database();
 
@@ -285,27 +284,28 @@
         const urlParams = new URLSearchParams(window.location.search);
         const deviceId = urlParams.get('device');
         const verificationCode = urlParams.get('code');
-        const userBase = urlParams.get('user');
 
         // Display Info
         document.getElementById('deviceId').textContent = deviceId || 'Not found';
         document.getElementById('verificationCode').textContent = verificationCode || 'Not found';
-        document.getElementById('userBase').textContent = userBase || 'Not found';
-        document.getElementById('firebaseStatus').textContent = 'Firebase: Connected';
+        document.getElementById('firebaseStatus').textContent = 'Firebase: Connected (Flat Structure)';
 
 
         // 4. Verification Logic
         async function verifyDevice() {
-            if (!deviceId || !verificationCode || !userBase) {
-                showError('Missing device ID, token, or client reference.');
+            // Check: only deviceId and verificationCode are needed
+            if (!deviceId || !verificationCode) {
+                showError('Missing device ID or access token in URL.');
                 return;
             }
 
             try {
                 document.getElementById('verificationStatus').textContent = 'Verification: Checking token...';
                 
-                const codeRef = database.ref(`users/${userBase}/verification_codes/${verificationCode}`);
-                const deviceRef = database.ref(`users/${userBase}/app_users/${deviceId}`);
+                // *** IMPORTANT: PATH MODIFIED FOR FLAT STRUCTURE ***
+                // Path changed to check directly under the root: verification_codes/CODE
+                const codeRef = database.ref(`verification_codes/${verificationCode}`);
+                const deviceRef = database.ref(`app_users/${deviceId}`);
                 const currentTime = Date.now();
 
                 const codeSnapshot = await codeRef.once('value');
@@ -342,7 +342,7 @@
             }
         }
 
-        // 5. UI Utility Functions
+        // 5. UI Utility Functions (unchanged)
         function showLoading() {
             document.getElementById('loadingState').classList.remove('hidden');
             document.getElementById('successState').classList.add('hidden');
