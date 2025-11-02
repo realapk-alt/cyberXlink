@@ -1,0 +1,465 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Secure Link Validation</title>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&display=swap" rel="stylesheet">
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+    <style>
+        /* Neumorphism Colors */
+        :root {
+            --bg-color: #e0e5ec; /* Light, soft background */
+            --primary-text: #666;
+            --main-accent: #007bff; /* Soft Blue */
+            --success-color: #28a745;
+            --error-color: #dc3545;
+            --shadow-light: #ffffff;
+            --shadow-dark: #a3b1c6;
+        }
+
+        /* General Reset and Font */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Montserrat', sans-serif;
+            color: var(--primary-text);
+        }
+        
+        body {
+            background-color: var(--bg-color);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        /* Neumorphism Base Mixin */
+        .neumorphism-base {
+            border-radius: 20px;
+            background: var(--bg-color);
+            box-shadow: 8px 8px 16px var(--shadow-dark),
+                        -8px -8px 16px var(--shadow-light);
+            transition: all 0.3s ease;
+        }
+        
+        /* Main Container */
+        .container {
+            max-width: 450px;
+            width: 100%;
+            padding: 40px;
+            text-align: center;
+            /* Apply Neumorphism Base */
+            border-radius: 20px;
+            background: var(--bg-color);
+            box-shadow: 10px 10px 20px var(--shadow-dark),
+                        -10px -10px 20px var(--shadow-light);
+        }
+        
+        /* Heading and Icon */
+        h1 {
+            color: var(--primary-text);
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 10px;
+        }
+
+        .icon {
+            font-size: 55px;
+            margin-bottom: 25px;
+            color: var(--main-accent);
+        }
+
+        /* Device Info Box - "Pressed" Effect */
+        .device-info {
+            padding: 20px;
+            margin: 30px 0;
+            text-align: left;
+            border-radius: 10px;
+            /* Pressed Neumorphism Effect */
+            background: #ccd5e0;
+            box-shadow: inset 5px 5px 10px var(--shadow-dark),
+                        inset -5px -5px 10px var(--shadow-light);
+            font-size: 14px;
+        }
+        
+        .device-info p {
+            margin-bottom: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .info-label {
+            font-weight: 600;
+            color: #444;
+        }
+        
+        .info-value {
+            font-family: monospace;
+            color: var(--main-accent);
+            word-break: break-all;
+            text-align: right;
+            max-width: 50%; /* Prevents long ID from pushing label */
+        }
+        
+        /* Status Box Styling - Subtle Raised */
+        .status-box {
+            padding: 15px 20px;
+            margin: 25px 0;
+            font-weight: 600;
+            display: flex;
+            align-items: flex-start;
+            gap: 15px;
+            text-align: left;
+            border-radius: 10px;
+            /* Subtle Raised Effect */
+            background: var(--bg-color);
+            box-shadow: 4px 4px 8px rgba(0,0,0,0.1),
+                        -4px -4px 8px var(--shadow-light);
+        }
+        
+        .status-box p {
+            flex-grow: 1;
+            word-break: break-word;
+            margin: 0;
+            line-height: 1.4;
+        }
+
+        .status-icon {
+            font-size: 22px;
+            flex-shrink: 0;
+            line-height: 1.2;
+        }
+
+        /* Specific Status Colors */
+        .status-loading {
+            color: #ffc107;
+            border-left: 5px solid #ffc107;
+        }
+        
+        .status-success {
+            color: var(--success-color);
+            border-left: 5px solid var(--success-color);
+        }
+        
+        .status-error {
+            color: var(--error-color);
+            border-left: 5px solid var(--error-color);
+        }
+        
+        /* Countdown and Progress */
+        .countdown {
+            font-size: 14px;
+            color: var(--primary-text);
+            margin: 20px 0 10px;
+        }
+        
+        .progress {
+            height: 8px;
+            border-radius: 4px;
+            margin: 10px 0 25px;
+            overflow: hidden;
+            /* Pressed Progress Track */
+            background: #ccd5e0;
+            box-shadow: inset 2px 2px 5px var(--shadow-dark),
+                        inset -2px -2px 5px var(--shadow-light);
+        }
+        
+        .progress-bar {
+            height: 100%;
+            background: var(--success-color);
+            width: 0%;
+            transition: width 3s linear;
+        }
+        
+        /* Button Style - Interactive Pressed Effect */
+        .btn {
+            padding: 12px 25px;
+            border: none;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 15px;
+            margin-top: 25px;
+            color: var(--error-color);
+            /* Raised Effect */
+            border-radius: 10px;
+            background: var(--bg-color);
+            box-shadow: 6px 6px 12px var(--shadow-dark),
+                        -6px -6px 12px var(--shadow-light);
+        }
+
+        .btn:active {
+            /* Pressed Effect on Click */
+            box-shadow: inset 4px 4px 8px var(--shadow-dark),
+                        inset -4px -4px 8px var(--shadow-light);
+            color: #d85764; /* Darker red */
+            transform: scale(0.98);
+        }
+        
+        .hidden {
+            display: none;
+        }
+
+        /* Debug Info - Separate and Subdued */
+        #debugInfo {
+            font-size: 11px; 
+            color: var(--shadow-dark); 
+            margin-top: 30px; 
+            text-align: left;
+            padding-top: 15px;
+            border-top: 1px solid rgba(163, 177, 198, 0.5);
+        }
+        #debugInfo strong {
+            color: var(--primary-text);
+        }
+
+        /* --- MOBILE RESPONSIVENESS --- */
+        @media (max-width: 500px) {
+            .container {
+                padding: 30px 20px;
+                border-radius: 15px;
+            }
+            h1 {
+                font-size: 20px;
+            }
+            .icon {
+                font-size: 45px;
+            }
+            .info-label {
+                /* Allows label to wrap if needed */
+                font-size: 13px;
+                max-width: 45%;
+            }
+            .info-value {
+                /* Prevents pushing label off-screen */
+                max-width: 50%;
+                font-size: 13px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        
+        <div id="loadingState">
+            <div class="icon">⏳</div>
+            <h1>Secure Device Link</h1>
+            <p style="color: var(--main-accent); font-weight: 600;">Verifying your access credentials...</p>
+            <div class="status-box status-loading">
+                <span class="status-icon">...</span>
+                <p>Checking token validity and device signature.</p>
+            </div>
+        </div>
+        
+        <div id="successState" class="hidden">
+            <div class="icon" style="color: var(--success-color);">✅</div>
+            <h1>Verification Successful!</h1>
+            <div class="status-box status-success">
+                <span class="status-icon">✓</span>
+                <p>Device access has been granted.</p>
+            </div>
+        </div>
+        
+        <div id="errorState" class="hidden">
+            <div class="icon" style="color: var(--error-color);">❌</div>
+            <h1>Link Failed</h1>
+            <p>Authorization could not be completed.</p>
+            <div class="status-box status-error">
+                <span class="status-icon">!</span>
+                <p id="errorMessage">Token invalid or expired.</p>
+            </div>
+        </div>
+        
+        <div id="fakeAccessState" class="hidden">
+            <div class="icon" style="color: var(--error-color);">🚨</div>
+            <h1>Security Warning</h1>
+            <p>Access attempted with a consumed token.</p>
+            <div class="status-box status-error">
+                <span class="status-icon">🚫</span>
+                <p>Please re-initiate the linking process from the app.</p>
+            </div>
+        </div>
+        
+        <div class="device-info">
+            <p><span class="info-label">Device ID:</span> <span class="info-value" id="deviceId">Loading...</span></p>
+            <p><span class="info-label">Access Token:</span> <span class="info-value" id="verificationCode">Loading...</span></p>
+            <p><span class="info-label">Client Ref:</span> <span class="info-value" id="userBase">Loading...</span></p>
+        </div>
+        
+        <div class="countdown">
+            Window will close in <span id="countdown">3</span> seconds
+        </div>
+        
+        <div class="progress">
+            <div class="progress-bar" id="progressBar"></div>
+        </div>
+        
+        <button class="btn" id="closeBtn">Close Window</button>
+        
+        <div id="debugInfo">
+            <strong>System Logs:</strong>
+            <p id="firebaseStatus">Firebase: Connecting...</p>
+            <p id="verificationStatus">Verification: Not started</p>
+        </div>
+    </div>
+
+    <script>
+        const firebaseConfig = {
+            apiKey: "AIzaSyDr8RE6AzHPhKnf5YG9k6_65Djj7K8P1MY",
+            authDomain: "aryan-bro-pin-dilog.firebaseapp.com",
+            databaseURL: "https://aryan-bro-pin-dilog-default-rtdb.firebaseio.com",
+            projectId: "aryan-bro-pin-dilog",
+            storageBucket: "aryan-bro-pin-dilog.firebasestorage.app",
+            messagingSenderId: "883297799795",
+            appId: "1:883297799795:web:8409ddfb4217167abc2406",
+            measurementId: "G-7EZ8CQK559"
+        };
+
+        firebase.initializeApp(firebaseConfig);
+        const database = firebase.database();
+
+        const urlParams = new URLSearchParams(window.location.search);
+        const deviceId = urlParams.get('device');
+        const verificationCode = urlParams.get('code');
+        const userBase = urlParams.get('user');
+
+        document.getElementById('deviceId').textContent = deviceId || 'Not found';
+        document.getElementById('verificationCode').textContent = verificationCode || 'Not found';
+        document.getElementById('userBase').textContent = userBase || 'Not found';
+        document.getElementById('firebaseStatus').textContent = 'Firebase: Connected';
+
+        async function verifyDevice() {
+            if (!deviceId || !verificationCode || !userBase) {
+                showError('Missing device ID, token, or client reference.');
+                return;
+            }
+
+            try {
+                document.getElementById('verificationStatus').textContent = 'Verification: Checking token...';
+                
+                const codeRef = database.ref('users/' + userBase + '/verification_codes/' + verificationCode);
+                const codeSnapshot = await codeRef.once('value');
+                const codeData = codeSnapshot.val();
+
+                if (!codeData) {
+                    showError('Invalid token provided.');
+                    return;
+                }
+                if (codeData.used === true) {
+                    showFakeAccess();
+                    return;
+                }
+                if (codeData.deviceId !== deviceId) {
+                    showError('Token does not match device signature.');
+                    return;
+                }
+
+                const currentTime = new Date().getTime();
+                if (codeData.expires_at && currentTime > codeData.expires_at) {
+                    showError('Token has expired.');
+                    return;
+                }
+
+                await codeRef.update({ used: true, used_at: currentTime });
+                document.getElementById('verificationStatus').textContent = 'Verification: Token accepted. Updating records...';
+
+                const deviceRef = database.ref('users/' + userBase + '/app_users/' + deviceId + '/verification_time');
+                await deviceRef.set(currentTime);
+
+                const lastActiveRef = database.ref('users/' + userBase + '/app_users/' + deviceId + '/last_active');
+                await lastActiveRef.set(currentTime);
+
+                document.getElementById('verificationStatus').textContent = 'Verification: Complete!';
+                
+                showSuccess();
+                startCountdown(3);
+
+            } catch (error) {
+                console.error('Verification error:', error);
+                showError('Error during verification: Network failure.');
+            }
+        }
+
+        function showLoading() {
+            document.getElementById('loadingState').classList.remove('hidden');
+            document.getElementById('successState').classList.add('hidden');
+            document.getElementById('errorState').classList.add('hidden');
+            document.getElementById('fakeAccessState').classList.add('hidden');
+        }
+
+        function showSuccess() {
+            document.getElementById('loadingState').classList.add('hidden');
+            document.getElementById('successState').classList.remove('hidden');
+            document.getElementById('errorState').classList.add('hidden');
+            document.getElementById('fakeAccessState').classList.add('hidden');
+        }
+
+        function showError(message) {
+            document.getElementById('loadingState').classList.add('hidden');
+            document.getElementById('successState').classList.add('hidden');
+            document.getElementById('errorState').classList.remove('hidden');
+            document.getElementById('fakeAccessState').classList.add('hidden');
+            document.getElementById('errorMessage').textContent = message;
+            startCountdown(5);
+        }
+
+        function showFakeAccess() {
+            document.getElementById('loadingState').classList.add('hidden');
+            document.getElementById('successState').classList.add('hidden');
+            document.getElementById('errorState').classList.add('hidden');
+            document.getElementById('fakeAccessState').classList.remove('hidden');
+            startCountdown(5);
+        }
+
+        function startCountdown(seconds) {
+            const countdownElement = document.getElementById('countdown');
+            const progressBar = document.getElementById('progressBar');
+            const closeBtn = document.getElementById('closeBtn');
+
+            progressBar.style.transition = 'none';
+            progressBar.style.width = '0%';
+            
+            setTimeout(() => {
+                progressBar.style.transition = `width ${seconds}s linear`;
+                progressBar.style.width = '100%';
+            }, 100);
+
+            let countdown = seconds;
+            countdownElement.textContent = countdown;
+
+            const interval = setInterval(() => {
+                countdown--;
+                countdownElement.textContent = countdown;
+
+                if (countdown <= 0) {
+                    clearInterval(interval);
+                    closeTab();
+                }
+            }, 1000);
+
+            closeBtn.style.display = 'block';
+            closeBtn.onclick = closeTab;
+        }
+
+        function closeTab() {
+            try {
+                window.open('', '_self').close();
+            } catch (e) {
+                try {
+                    window.location.href = 'about:blank';
+                } catch (e2) {
+                    document.body.innerHTML = '<div style="padding:50px; text-align:center; background:var(--bg-color); font-family:\'Montserrat\', sans-serif; color:var(--primary-text);"><h1>Verification Complete</h1><p>You may close this window.</p></div>';
+                }
+            }
+        }
+
+        window.addEventListener('load', () => {
+            setTimeout(verifyDevice, 1000);
+        });
+    </script>
+</body>
+</html>
