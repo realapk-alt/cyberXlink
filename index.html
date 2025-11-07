@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Device Verification</title>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        
+        .container {
+            background: white;
+            padding: 40px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            max-width: 500px;
+            width: 90%;
+            text-align: center;
+        }
+        
+        .icon {
+            font-size: 60px;
+            margin-bottom: 20px;
+        }
+        
+        h1 {
+            color: #333;
+            margin-bottom: 15px;
+        }
+        
+        .device-info {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 20px 0;
+            text-align: left;
+        }
+        
+        .info-label {
+            font-weight: bold;
+            color: #555;
+        }
+        
+        .info-value {
+            font-family: monospace;
+            color: #4a00e0;
+            word-break: break-all;
+        }
+        
+        .status-box {
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+            border-left: 4px solid #4a00e0;
+        }
+        
+        .status-loading {
+            background: #fff3cd;
+            color: #856404;
+            border-left-color: #ffc107;
+        }
+        
+        .status-success {
+            background: #d4edda;
+            color: #155724;
+            border-left-color: #28a745;
+        }
+        
+        .status-error {
+            background: #f8d7da;
+            color: #721c24;
+            border-left-color: #dc3545;
+        }
+        
+        .status-warning {
+            background: #fff3cd;
+            color: #856404;
+            border-left-color: #ffc107;
+        }
+        
+        .countdown {
+            font-size: 16px;
+            color: #666;
+            margin: 20px 0;
+        }
+        
+        .progress {
+            height: 6px;
+            background: #e9ecef;
+            border-radius: 3px;
+            margin: 25px 0;
+            overflow: hidden;
+        }
+        
+        .progress-bar {
+            height: 100%;
+            background: #28a745;
+            width: 0%;
+            transition: width 3s linear;
+        }
+        
+        .btn {
+            background: #dc3545;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 6px;
+            font-size: 16px;
+            cursor: pointer;
+            margin-top: 15px;
+        }
+        
+        .hidden {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Loading State -->
+        <div id="loadingState">
+            <div class="icon">⏳</div>
+            <h1>Verifying Your Device</h1>
+            <div class="status-box status-loading">
+                <p>Checking verification code...</p>
+            </div>
+        </div>
+        
+        <!-- Success State -->
+        <div id="successState" class="hidden">
+            <div class="icon">✅</div>
+            <h1>Device Verified!</h1>
+            <div class="status-box status-success">
+                <p>Your device has been successfully verified!</p>
+            </div>
+        </div>
+        
+        <!-- Error State -->
+        <div id="errorState" class="hidden">
+            <div class="icon">❌</div>
+            <h1>Verification Failed</h1>
+            <div class="status-box status-error">
+                <p id="errorMessage">There was an error verifying your device.</p>
+            </div>
+        </div>
+        
+        <!-- Fake Access Detected -->
+        <div id="fakeAccessState" class="hidden">
+            <div class="icon">🚫</div>
+            <h1>Security Alert</h1>
+            <div class="status-box status-error">
+                <p>You are trying to use a verification code that has already been used!</p>
+                <p style="margin-top: 10px; font-size: 14px;">Each verification code can only be used once.</p>
+            </div>
+        </div>
+        
+        <!-- Device Info -->
+        <div class="device-info">
+            <p><span class="info-label">Device ID:</span> <span class="info-value" id="deviceId">Loading...</span></p>
+            <p><span class="info-label">Verification Code:</span> <span class="info-value" id="verificationCode">Loading...</span></p>
+        </div>
+        
+        <div class="countdown">
+            This tab will close in <span id="countdown">3</span> seconds
+        </div>
+        
+        <div class="progress">
+            <div class="progress-bar" id="progressBar"></div>
+        </div>
+        
+        <button class="btn" id="closeBtn">Close Tab Now</button>
+        
+        <div id="debugInfo" style="font-size: 12px; color: #666; margin-top: 20px; text-align: left;">
+            <p><strong>Debug Info:</strong></p>
+            <p id="firebaseStatus">Firebase: Connecting...</p>
+            <p id="verificationStatus">Verification: Not started</p>
+        </div>
+    </div>
+
+    <script>
+        const firebaseConfig = {
+            apiKey: "AIzaSyDr8RE6AzHPhKnf5YG9k6_65Djj7K8P1MY",
+            authDomain: "aryan-bro-pin-dilog.firebaseapp.com",
+            databaseURL: "https://aryan-bro-pin-dilog-default-rtdb.firebaseio.com",
+            projectId: "aryan-bro-pin-dilog",
+            storageBucket: "aryan-bro-pin-dilog.firebasestorage.app",
+            messagingSenderId: "883297799795",
+            appId: "1:883297799795:web:8409ddfb4217167abc2406",
+            measurementId: "G-7EZ8CQK559"
+        };
+
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+        const database = firebase.database();
+
+        // Get URL parameters
+        const urlParams = new URLSearchParams(window.location.search);
+        const deviceId = urlParams.get('device');
+        const verificationCode = urlParams.get('code');
+
+        // Display device info
+        document.getElementById('deviceId').textContent = deviceId || 'Not provided';
+        document.getElementById('verificationCode').textContent = verificationCode || 'Not provided';
+
+        // Update debug info
+        document.getElementById('firebaseStatus').textContent = 'Firebase: Connected';
+
+        async function verifyDevice() {
+            if (!deviceId || !verificationCode) {
+                showError('Missing device ID or verification code');
+                return;
+            }
+
+            try {
+                document.getElementById('verificationStatus').textContent = 'Verification: Checking code...';
+                
+                // Check verification code in Firebase
+                const codeRef = database.ref('verification_codes/' + verificationCode);
+                const codeSnapshot = await codeRef.once('value');
+                const codeData = codeSnapshot.val();
+
+                if (!codeData) {
+                    showError('Invalid verification code');
+                    return;
+                }
+
+                if (codeData.used === true) {
+                    // Code already used - show fake access message
+                    showFakeAccess();
+                    return;
+                }
+
+                if (codeData.deviceId !== deviceId) {
+                    showError('Verification code does not match device');
+                    return;
+                }
+
+                // Check if code is expired (10 minutes)
+                const currentTime = new Date().getTime();
+                if (codeData.expires_at && currentTime > codeData.expires_at) {
+                    showError('Verification code has expired');
+                    return;
+                }
+
+                // Mark code as used
+                await codeRef.update({
+                    used: true,
+                    used_at: currentTime
+                });
+
+                document.getElementById('verificationStatus').textContent = 'Verification: Code validated, updating device...';
+
+                // Update device verification - STORE ONLY VERIFICATION TIME
+                const deviceRef = database.ref('devices/' + deviceId);
+                await deviceRef.set({
+                    verification_time: currentTime
+                });
+
+                document.getElementById('verificationStatus').textContent = 'Verification: Complete!';
+                
+                // Show success and start countdown
+                showSuccess();
+                startCountdown(3);
+
+            } catch (error) {
+                console.error('Verification error:', error);
+                showError('Error during verification: ' + error.message);
+            }
+        }
+
+        function showLoading() {
+            document.getElementById('loadingState').classList.remove('hidden');
+            document.getElementById('successState').classList.add('hidden');
+            document.getElementById('errorState').classList.add('hidden');
+            document.getElementById('fakeAccessState').classList.add('hidden');
+        }
+
+        function showSuccess() {
+            document.getElementById('loadingState').classList.add('hidden');
+            document.getElementById('successState').classList.remove('hidden');
+            document.getElementById('errorState').classList.add('hidden');
+            document.getElementById('fakeAccessState').classList.add('hidden');
+        }
+
+        function showError(message) {
+            document.getElementById('loadingState').classList.add('hidden');
+            document.getElementById('successState').classList.add('hidden');
+            document.getElementById('errorState').classList.remove('hidden');
+            document.getElementById('fakeAccessState').classList.add('hidden');
+            document.getElementById('errorMessage').textContent = message;
+            startCountdown(5);
+        }
+
+        function showFakeAccess() {
+            document.getElementById('loadingState').classList.add('hidden');
+            document.getElementById('successState').classList.add('hidden');
+            document.getElementById('errorState').classList.add('hidden');
+            document.getElementById('fakeAccessState').classList.remove('hidden');
+            startCountdown(5);
+        }
+
+        function startCountdown(seconds) {
+            const countdownElement = document.getElementById('countdown');
+            const progressBar = document.getElementById('progressBar');
+            const closeBtn = document.getElementById('closeBtn');
+
+            // Reset progress bar
+            progressBar.style.transition = 'none';
+            progressBar.style.width = '0%';
+            
+            setTimeout(() => {
+                progressBar.style.transition = `width ${seconds}s linear`;
+                progressBar.style.width = '100%';
+            }, 100);
+
+            let countdown = seconds;
+            countdownElement.textContent = countdown;
+
+            const interval = setInterval(() => {
+                countdown--;
+                countdownElement.textContent = countdown;
+
+                if (countdown <= 0) {
+                    clearInterval(interval);
+                    closeTab();
+                }
+            }, 1000);
+
+            // Show close button
+            closeBtn.style.display = 'block';
+            closeBtn.onclick = closeTab;
+        }
+
+        function closeTab() {
+            // Multiple methods to ensure tab closes
+            try {
+                window.open('', '_self').close();
+            } catch (e) {
+                try {
+                    window.location.href = 'about:blank';
+                } catch (e2) {
+                    document.body.innerHTML = '<div style="text-align:center;padding:50px;"><h2>Verification Complete</h2><p>You can close this tab.</p></div>';
+                }
+            }
+        }
+
+        // Start verification when page loads
+        window.addEventListener('load', () => {
+            setTimeout(verifyDevice, 1000);
+        });
+    </script>
+</body>
+</html>
