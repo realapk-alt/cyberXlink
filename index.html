@@ -2,125 +2,102 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Device Verification — Glass UI</title>
+  <title>Device Verification — Light</title>
   <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
   <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
   <style>
     :root{
-      --bg-1: #061025; --bg-2:#0f1724;
-      --accent-a:#8b5cf6; --accent-b:#06b6d4; --muted:rgba(255,255,255,0.92);
-      --glass:rgba(255,255,255,0.03); --card:rgba(255,255,255,0.025);
-      --ok:#22c55e; --err:#ef4444;
-    }
-    @media (prefers-color-scheme: light){
-      :root{--bg-1:#f7fafc;--bg-2:#eef2ff;--glass:rgba(255,255,255,0.7);--muted:rgba(15,23,42,0.8)}
-    }*{box-sizing:border-box;margin:0;padding:0;font-family:Inter,ui-sans-serif,system-ui,-apple-system,'Segoe UI',Roboto,Helvetica,Arial}
-body{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:28px;background:radial-gradient(600px 300px at 10% 8%, rgba(139,92,246,0.06), transparent), linear-gradient(180deg,var(--bg-1),var(--bg-2));color:var(--muted)}
+      --bg: #f7fafc;
+      --card-bg: rgba(255,255,255,0.9);
+      --glass: rgba(15,23,42,0.03);
+      --accent: #2563eb; /* blue */
+      --accent-2: #06b6d4; /* teal */
+      --muted: #334155;
+      --success: #16a34a;
+      --error: #ef4444;
+    }*{box-sizing:border-box;margin:0;padding:0;font-family:Inter,system-ui, -apple-system, 'Segoe UI', Roboto, Arial}
+body{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px;background:linear-gradient(180deg,var(--bg),#ffffff);color:var(--muted)}
 
-.wrap{width:100%;max-width:740px}
-.card{border-radius:20px;padding:28px;background:linear-gradient(180deg, rgba(255,255,255,0.012), rgba(255,255,255,0.006));border:1px solid rgba(255,255,255,0.04);box-shadow:0 18px 60px rgba(3,8,20,0.6);backdrop-filter:blur(14px) saturate(120%);position:relative;overflow:hidden}
-.card::before{content:'';position:absolute;left:-120px;top:-60px;width:420px;height:420px;background:radial-gradient(circle at 30% 30%, rgba(139,92,246,0.12), transparent 20%), radial-gradient(circle at 70% 70%, rgba(6,182,212,0.08), transparent 20%);filter:blur(44px);pointer-events:none}
+.container{width:100%;max-width:560px;background:var(--card-bg);border-radius:16px;padding:28px;box-shadow:0 10px 30px rgba(16,24,40,0.06);border:1px solid rgba(15,23,42,0.04);position:relative;overflow:hidden}
 
-.center-col{display:flex;flex-direction:column;align-items:center;gap:18px}
-.icon-wrap{width:120px;height:120px;border-radius:22px;display:flex;align-items:center;justify-content:center;font-size:48px;color:white;background:linear-gradient(135deg,var(--accent-a),var(--accent-b));box-shadow:0 18px 50px rgba(11,36,66,0.45);transform:translateY(0);transition:transform .45s cubic-bezier(.2,.9,.28,1),box-shadow .3s}
-.icon-wrap.pop{animation:pop .9s ease-in-out both}
-@keyframes pop{0%{transform:scale(.88)}50%{transform:scale(1.08)}100%{transform:scale(1)}}
+.center{display:flex;flex-direction:column;align-items:center;gap:12px}
 
-.title{font-size:20px;color:var(--muted);font-weight:700;text-align:center}
-.subtitle{font-size:13px;color:rgba(255,255,255,0.64);text-align:center}
+/* icon centered */
+.icon{
+  width:96px;height:96px;border-radius:18px;display:flex;align-items:center;justify-content:center;font-size:40px;color:white;background:linear-gradient(135deg,var(--accent),var(--accent-2));box-shadow:0 8px 30px rgba(37,99,235,0.18);transform:translateY(0);transition:transform .45s cubic-bezier(.2,.9,.28,1);
+}
+.icon.animate{animation:pop .9s ease-in-out both}
+@keyframes pop{0%{transform:scale(.9)}50%{transform:scale(1.06)}100%{transform:scale(1)}}
 
-.status-box{width:100%;margin-top:12px;padding:14px;border-radius:12px;background:var(--glass);display:flex;align-items:center;gap:12px;border-left:4px solid var(--accent-a);transition:all .35s ease}
-.status-text{font-size:14px;color:rgba(255,255,255,0.86)}
+h1{font-size:18px;color:var(--muted);margin-top:6px}
+p.lead{font-size:13px;color:#475569}
 
-.device-info{margin-top:18px;width:100%;display:grid;grid-template-columns:1fr 1fr;gap:12px}
-.info-card{background:linear-gradient(180deg, rgba(255,255,255,0.01), rgba(255,255,255,0.005));padding:12px;border-radius:12px;border:1px solid rgba(255,255,255,0.03)}
-.label{font-size:12px;color:rgba(255,255,255,0.6)}
-.value{font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,monospace;color:var(--muted);font-size:13px;margin-top:6px;word-break:break-all}
+.status{width:100%;margin-top:12px;padding:12px;border-radius:10px;background:var(--glass);border-left:4px solid var(--accent);display:flex;align-items:center;justify-content:center}
+.status.loading{border-left-color:#f59e0b;color:#92400e}
+.status.success{border-left-color:var(--success);color:var(--success)}
+.status.error{border-left-color:var(--error);color:var(--error)}
 
-.countdown{margin-top:14px;color:rgba(255,255,255,0.62);font-size:13px;text-align:center}
-.progress{height:8px;background:rgba(255,255,255,0.03);border-radius:999px;margin-top:12px;overflow:hidden}
-.progress-bar{height:100%;width:0%;background:linear-gradient(90deg,var(--accent-a),var(--accent-b));transition:width linear}
+.device-info{margin-top:16px;width:100%;background:rgba(240,246,255,0.6);padding:10px;border-radius:10px;display:flex;flex-direction:column;gap:10px}
+.row{display:flex;justify-content:space-between;align-items:center}
+.label{font-size:13px;color:#64748b}
+.value{font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,monospace;color:var(--muted);font-size:13px}
+
+.count{margin-top:14px;color:#475569;text-align:center}
+.progress{height:8px;background:#eef2ff;border-radius:999px;margin-top:12px;overflow:hidden}
+.progress-bar{height:100%;width:0%;background:linear-gradient(90deg,var(--accent),var(--accent-2));transition:width linear}
 
 .actions{display:flex;gap:10px;justify-content:center;margin-top:16px}
-.btn{padding:10px 14px;border-radius:12px;border:none;cursor:pointer;font-weight:700}
-.btn.ghost{background:transparent;border:1px solid rgba(255,255,255,0.04);color:var(--muted)}
-.btn.primary{background:linear-gradient(90deg,var(--accent-a),var(--accent-b));color:white;box-shadow:0 10px 30px rgba(139,92,246,0.12)}
+.btn{padding:10px 14px;border-radius:10px;border:none;cursor:pointer;font-weight:700}
+.btn.ghost{background:transparent;border:1px solid rgba(15,23,42,0.06);color:var(--muted)}
 
-.telegram{margin-top:18px;display:flex;justify-content:center}
-.tele-btn{display:inline-flex;align-items:center;gap:10px;padding:12px 18px;border-radius:14px;background:linear-gradient(90deg,var(--accent-a),var(--accent-b));color:white;border:none;font-weight:800;box-shadow:0 12px 36px rgba(11,36,66,0.4);text-decoration:none}
+/* telegram button fixed bottom inside card */
+.telegram-wrap{margin-top:18px;display:flex;justify-content:center}
+.tele{display:inline-flex;align-items:center;gap:10px;padding:12px 18px;border-radius:12px;background:linear-gradient(90deg,var(--accent),var(--accent-2));color:white;text-decoration:none;font-weight:800;box-shadow:0 8px 30px rgba(37,99,235,0.12)}
 
-/* big overlay for final states (centered icon and message) */
-.overlay{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;pointer-events:none;opacity:0;transform:scale(.98);transition:opacity .4s ease,transform .45s cubic-bezier(.2,.9,.28,1)}
-.overlay.show{opacity:1;transform:scale(1);pointer-events:auto}
-.overlay .big-icon{width:140px;height:140px;border-radius:20px;display:flex;align-items:center;justify-content:center;font-size:72px;color:white;background:linear-gradient(135deg,var(--accent-a),var(--accent-b));box-shadow:0 30px 80px rgba(11,36,66,0.6)}
-.overlay .big-text{margin-top:14px;color:var(--muted);font-weight:700;font-size:18px;text-align:center}
-.overlay.error .big-icon{background:linear-gradient(135deg,#ff5a5a,#ff2d2d)}
-.overlay.success .big-icon{background:linear-gradient(135deg,#38d39f,#1fb760)}
+/* final small center icon overlay for success/error (smaller ❌) */
+.final{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;flex-direction:column;pointer-events:none;opacity:0;transition:opacity .35s ease}
+.final.show{opacity:1;pointer-events:auto}
+.final .big{width:84px;height:84px;border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:40px;color:white;box-shadow:0 12px 36px rgba(16,24,40,0.12)}
+.final.error .big{background:linear-gradient(135deg,#ff6b6b,#ff3b3b)}
+.final.success .big{background:linear-gradient(135deg,#34d399,#10b981)}
+.final .text{margin-top:10px;color:var(--muted);font-weight:700}
 
-/* status variants */
-.status-success{border-left-color:var(--ok);color:var(--ok);background:linear-gradient(180deg, rgba(34,197,94,0.03), rgba(34,197,94,0.01));}
-.status-error{border-left-color:var(--err);color:var(--err);background:linear-gradient(180deg, rgba(239,68,68,0.03), rgba(239,68,68,0.01));}
-.status-loading{border-left-color:#f59e0b;color:#92400e;background:linear-gradient(180deg, rgba(255,243,205,0.03), rgba(255,243,205,0.01));}
-
-@media (max-width:520px){.device-info{grid-template-columns:1fr}.icon-wrap{width:96px;height:96px;font-size:38px}.overlay .big-icon{width:110px;height:110px;font-size:58px}}
-
-.fade-in{animation:fadeUp .5s ease both}
-@keyframes fadeUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
-
-/* shimmer for progress */
-.progress-bar::after{content:'';position:absolute;height:8px;width:120px;right:-120px;top:0;background:linear-gradient(90deg, rgba(255,255,255,0.06), rgba(255,255,255,0.16), rgba(255,255,255,0.06));animation:shimmer 2.2s linear infinite}
-@keyframes shimmer{0%{transform:translateX(0)}100%{transform:translateX(-100%)}}
+@media (max-width:480px){.icon{width:80px;height:80px;font-size:34px}.final .big{width:72px;height:72px;font-size:36px}}
 
   </style>
 </head>
 <body>
-  <div class="wrap">
-    <div class="card fade-in" id="card">
-      <div class="center-col">
-        <div id="icon" class="icon-wrap">⏳</div>
-        <div>
-          <div class="title" id="title">Verifying Your Device</div>
-          <div class="subtitle" id="subtitle">Please wait while we check the verification code.</div>
-        </div><div id="statusBox" class="status-box status-loading">
-      <div id="statusText" class="status-text">Checking verification code...</div>
-    </div>
+  <div class="container">
+    <div class="center">
+      <div id="icon" class="icon">⏳</div>
+      <h1 id="title">Verifying Your Device</h1>
+      <p class="lead" id="subtitle">Please wait while we check the verification code.</p><div id="status" class="status loading"><span id="statusText">Checking verification code...</span></div>
 
-    <div class="device-info">
-      <div class="info-card">
-        <div class="label">Device ID</div>
-        <div id="deviceId" class="value">Loading...</div>
-      </div>
-      <div class="info-card">
-        <div class="label">Verification Code</div>
-        <div id="verificationCode" class="value">Loading...</div>
-      </div>
-    </div>
-
-    <div class="countdown">This tab will close in <strong id="countdown">3</strong> seconds</div>
-    <div class="progress" style="position:relative"><div id="progressBar" class="progress-bar"></div></div>
-
-    <div class="actions">
-      <button id="closeBtn" class="btn ghost">Close Tab Now</button>
-    </div>
-
-    <div class="telegram">
-      <a class="tele-btn" id="teleBtn" href="https://t.me/aboutofhcs" target="_blank" rel="noopener noreferrer">Join on Telegram</a>
-    </div>
-
+  <div class="device-info">
+    <div class="row"><div class="label">Device ID</div><div id="deviceId" class="value">Loading...</div></div>
+    <div class="row"><div class="label">Verification Code</div><div id="verificationCode" class="value">Loading...</div></div>
   </div>
 
-  <!-- overlay for final states (centered big icon + text) -->
-  <div id="overlay" class="overlay" aria-hidden="true">
-    <div id="overlayBox" class="overlay-box">
-      <div id="overlayIcon" class="big-icon">❌</div>
-      <div id="overlayText" class="big-text">Verification Failed</div>
-    </div>
+  <div class="count">This tab will close in <strong id="countdown">3</strong> seconds</div>
+  <div class="progress"><div id="progressBar" class="progress-bar"></div></div>
+
+  <div class="actions">
+    <button id="closeBtn" class="btn ghost">Close Tab Now</button>
   </div>
 
+  <div class="telegram-wrap">
+    <a id="teleBtn" class="tele" href="https://t.me/aboutofhcs" target="_blank" rel="noopener noreferrer">Join on Telegram</a>
+  </div>
+</div>
+
+<!-- final centered small icon + text (appears on success/error) -->
+<div id="final" class="final" aria-hidden="true">
+  <div id="finalBox" class="big">❌</div>
+  <div id="finalText" class="text">Verification Failed</div>
 </div>
 
   </div>  <script>
-    // === Firebase config (kept) ===
+    // Firebase config (kept)
     const firebaseConfig = {
       apiKey: "AIzaSyBeHXB_9nHTWofFeXKOVUlQYCrB4YhAx_w",
       authDomain: "real-apk-pin.firebaseapp.com",
@@ -135,16 +112,16 @@ body{min-height:100vh;display:flex;align-items:center;justify-content:center;pad
     const database = firebase.database();
 
     // UI refs
-    const iconEl = document.getElementById('icon');
+    const icon = document.getElementById('icon');
     const titleEl = document.getElementById('title');
     const subtitleEl = document.getElementById('subtitle');
-    const statusBox = document.getElementById('statusBox');
+    const statusEl = document.getElementById('status');
     const statusText = document.getElementById('statusText');
     const deviceIdEl = document.getElementById('deviceId');
     const verificationCodeEl = document.getElementById('verificationCode');
-    const overlay = document.getElementById('overlay');
-    const overlayIcon = document.getElementById('overlayIcon');
-    const overlayText = document.getElementById('overlayText');
+    const finalEl = document.getElementById('final');
+    const finalBox = document.getElementById('finalBox');
+    const finalText = document.getElementById('finalText');
 
     // URL params
     const params = new URLSearchParams(window.location.search);
@@ -154,66 +131,39 @@ body{min-height:100vh;display:flex;align-items:center;justify-content:center;pad
     deviceIdEl.textContent = deviceId || 'Not provided';
     verificationCodeEl.textContent = verificationCode || 'Not provided';
 
-    function showOverlay(type, icon, text){
-      overlay.className = 'overlay show ' + (type==='error' ? 'error' : (type==='success' ? 'success' : ''));
-      overlayIcon.textContent = icon;
-      overlayText.textContent = text;
-      // subtle pop
-      overlayIcon.style.transform = 'scale(.9)';
-      setTimeout(()=>{ overlayIcon.style.transform = 'scale(1)'; },80);
-    }
-    function hideOverlay(){ overlay.className = 'overlay'; }
+    function animateIcon(){ icon.classList.add('animate'); setTimeout(()=>icon.classList.remove('animate'),900); }
 
-    function setState({icon,title,subtitle,statusClass,statusMessage,showOverlayState}){
-      iconEl.textContent = icon; iconEl.classList.add('pop'); setTimeout(()=>iconEl.classList.remove('pop'),900);
-      titleEl.textContent = title; subtitleEl.textContent = subtitle;
-      statusBox.className = 'status-box ' + statusClass; statusText.textContent = statusMessage;
-      if(showOverlayState){ showOverlay(statusClass.includes('error') ? 'error' : 'success', icon, title); }
-      else{ hideOverlay(); }
-    }
+    function setLoading(){ statusEl.className = 'status loading'; statusText.textContent = 'Checking verification code...'; icon.textContent='⏳'; titleEl.textContent='Verifying Your Device'; subtitleEl.textContent='Please wait while we check the verification code.'; animateIcon(); hideFinal(); }
+    function setSuccess(){ statusEl.className = 'status success'; statusText.textContent = 'Verification successful.'; icon.textContent='✅'; titleEl.textContent='Device Verified!'; subtitleEl.textContent='Your device has been successfully verified.'; animateIcon(); showFinal('success','✅','Device Verified!'); }
+    function setError(msg){ statusEl.className = 'status error'; statusText.textContent = msg; icon.textContent='❌'; titleEl.textContent='Verification Failed'; subtitleEl.textContent=msg; animateIcon(); showFinal('error','❌', msg); }
+
+    function showFinal(type, symbol, text){ finalEl.className = 'final show ' + type; finalBox.textContent = symbol; finalText.textContent = text; }
+    function hideFinal(){ finalEl.className = 'final'; }
 
     async function verifyDevice(){
-      if(!deviceId || !verificationCode){ setState({icon:'❌',title:'Verification Failed',subtitle:'Missing device ID or verification code',statusClass:'status-error',statusMessage:'Missing device ID or verification code',showOverlayState:true}); startCountdown(5); return; }
-
+      if(!deviceId || !verificationCode){ setError('Missing device ID or verification code'); startCountdown(5); return; }
       try{
-        setState({icon:'⏳',title:'Verifying Your Device',subtitle:'Please wait while we check the verification code.',statusClass:'status-loading',statusMessage:'Checking verification code...',showOverlayState:false});
-
+        setLoading();
         const codeRef = database.ref('verification_codes/' + verificationCode);
-        const codeSnapshot = await codeRef.once('value');
-        const codeData = codeSnapshot.val();
-
-        if(!codeData){ setState({icon:'❌',title:'Verification Failed',subtitle:'Invalid verification code',statusClass:'status-error',statusMessage:'Invalid verification code',showOverlayState:true}); startCountdown(5); return; }
-        if(codeData.used === true){ setState({icon:'🚫',title:'Security Alert',subtitle:'This verification code has already been used.',statusClass:'status-error',statusMessage:'Code already used',showOverlayState:true}); startCountdown(5); return; }
-        if(codeData.deviceId !== deviceId){ setState({icon:'❌',title:'Verification Failed',subtitle:'Verification code does not match device',statusClass:'status-error',statusMessage:'Verification code does not match device',showOverlayState:true}); startCountdown(5); return; }
-
-        const currentTime = Date.now();
-        if(codeData.expires_at && currentTime > codeData.expires_at){ setState({icon:'❌',title:'Verification Failed',subtitle:'Verification code has expired',statusClass:'status-error',statusMessage:'Verification code has expired',showOverlayState:true}); startCountdown(5); return; }
-
-        await codeRef.update({ used: true, used_at: currentTime });
-        const deviceRef = database.ref('devices/' + deviceId);
-        await deviceRef.set({ verification_time: currentTime });
-
-        setState({icon:'✅',title:'Device Verified!',subtitle:'Your device has been successfully verified.',statusClass:'status-success',statusMessage:'Verification successful.',showOverlayState:true});
-        startCountdown(3);
-
-      }catch(err){ console.error(err); setState({icon:'❌',title:'Verification Failed',subtitle:err.message||String(err),statusClass:'status-error',statusMessage:'Error during verification: ' + (err.message||String(err)),showOverlayState:true}); startCountdown(5); }
+        const snap = await codeRef.once('value');
+        const data = snap.val();
+        if(!data){ setError('Invalid verification code'); startCountdown(5); return; }
+        if(data.used === true){ setError('This verification code has already been used'); startCountdown(5); return; }
+        if(data.deviceId !== deviceId){ setError('Verification code does not match device'); startCountdown(5); return; }
+        const now = Date.now();
+        if(data.expires_at && now > data.expires_at){ setError('Verification code has expired'); startCountdown(5); return; }
+        await codeRef.update({ used: true, used_at: now });
+        await database.ref('devices/' + deviceId).set({ verification_time: now });
+        setSuccess(); startCountdown(3);
+      }catch(err){ console.error(err); setError('Error: ' + (err.message || err)); startCountdown(5); }
     }
 
-    // countdown + progress
-    function startCountdown(seconds){
-      const countdownEl = document.getElementById('countdown');
-      const progressBar = document.getElementById('progressBar');
-      progressBar.style.transition = 'none'; progressBar.style.width = '0%';
-      setTimeout(()=>{ progressBar.style.transition = `width ${seconds}s linear`; progressBar.style.width = '100%'; },80);
-      let count = seconds; countdownEl.textContent = count;
-      const iv = setInterval(()=>{ count--; countdownEl.textContent = count; if(count<=0){ clearInterval(iv); closeTab(); } },1000);
-    }
+    function startCountdown(seconds){ const countdown = document.getElementById('countdown'); const bar = document.getElementById('progressBar'); bar.style.transition='none'; bar.style.width='0%'; setTimeout(()=>{ bar.style.transition = `width ${seconds}s linear`; bar.style.width = '100%'; },80); let c=seconds; countdown.textContent=c; const iv=setInterval(()=>{ c--; countdown.textContent=c; if(c<=0){ clearInterval(iv); closeTab(); } },1000); }
 
-    function closeTab(){ try{ window.open('','_self').close(); }catch(e){ try{ window.location.href='about:blank'; }catch(e2){ document.body.innerHTML = '<div style="text-align:center;padding:50px;"><h2>Verification Complete</h2><p>You can close this tab.</p></div>'; } } }
+    function closeTab(){ try{ window.open('','_self').close(); }catch(e){ try{ window.location.href='about:blank'; }catch(e2){ document.body.innerHTML='<div style="text-align:center;padding:50px;"><h2>Verification Complete</h2><p>You can close this tab.</p></div>'; } } }
 
     document.getElementById('closeBtn').addEventListener('click', closeTab);
 
-    // start verifying
-    window.addEventListener('load', ()=>{ setTimeout(verifyDevice,700); setState({icon:'⏳',title:'Verifying Your Device',subtitle:'Please wait while we check the verification code.',statusClass:'status-loading',statusMessage:'Checking verification code...',showOverlayState:false}); });
+    window.addEventListener('load', ()=>{ setTimeout(verifyDevice,700); setLoading(); });
   </script></body>
 </html>
