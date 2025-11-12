@@ -2,73 +2,40 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Device Verification — Glass iOS Style</title>
+  <title>Device Verification</title>
   <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
   <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
   <style>
     :root{
-      --bg-1:#0f172a; --bg-2:#ffffff;
-      --card-bg: rgba(255,255,255,0.82);
-      --glass: rgba(255,255,255,0.6);
-      --accent-a: #6b46c1; /* purple */
-      --accent-b: #06b6d4; /* cyan */
-      --muted: #0f172a;
-      --success: #16a34a;
-      --error: #ef4444;
-    }@media (prefers-color-scheme: light){
-  :root{--bg-1:#f7fafc;--bg-2:#ffffff;--card-bg:rgba(255,255,255,0.98);--muted:#0f172a}
-}
-
-*{box-sizing:border-box;margin:0;padding:0;font-family:-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial}
-body{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:28px;background:linear-gradient(180deg,#f7f9fc,#ffffff);color:var(--muted)}
-
-.card{width:100%;max-width:640px;border-radius:18px;padding:28px;background:linear-gradient(180deg, rgba(255,255,255,0.96), rgba(255,255,255,0.9));box-shadow:0 18px 60px rgba(15,23,42,0.06);border:1px solid rgba(16,24,40,0.04);backdrop-filter: blur(8px);position:relative;overflow:hidden}
-.card::before{content:'';position:absolute;left:-120px;top:-60px;width:420px;height:420px;background:radial-gradient(circle at 30% 30%, rgba(107,70,193,0.08), transparent 20%), radial-gradient(circle at 70% 70%, rgba(6,182,212,0.06), transparent 20%);filter:blur(40px);pointer-events:none}
-
-.center{display:flex;flex-direction:column;align-items:center;gap:14px}
-
-.icon{width:110px;height:110px;border-radius:20px;display:flex;align-items:center;justify-content:center;font-size:48px;color:white;background:linear-gradient(135deg,var(--accent-a),var(--accent-b));box-shadow:0 18px 50px rgba(11,36,66,0.12);transition:transform .45s cubic-bezier(.2,.9,.28,1),opacity .25s}
-.icon.pop{animation:pop .9s ease-in-out both}
-@keyframes pop{0%{transform:scale(.9)}50%{transform:scale(1.06)}100%{transform:scale(1)}}
-
-h1{font-size:20px;color:var(--muted);font-weight:700}
-.lead{font-size:14px;color:rgba(15,23,42,0.6);text-align:center}
-
-.status{width:100%;margin-top:12px;padding:12px;border-radius:12px;background:rgba(245,247,250,0.7);border-left:4px solid var(--accent-a);display:flex;align-items:center;justify-content:center}
-.status.loading{border-left-color:#f59e0b;color:#92400e}
-.status.success{border-left-color:var(--success);color:var(--success)}
-.status.error{border-left-color:var(--error);color:var(--error)}
-
-.device-info{margin-top:16px;width:100%;display:grid;grid-template-columns:1fr 1fr;gap:12px}
-.info{background:linear-gradient(180deg, rgba(255,255,255,0.92), rgba(255,255,255,0.88));padding:12px;border-radius:12px;border:1px solid rgba(16,24,40,0.03)}
-.label{font-size:12px;color:rgba(15,23,42,0.6)}
-.value{font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,monospace;color:var(--muted);font-size:13px;margin-top:6px;word-break:break-all}
-
-.count{margin-top:14px;color:rgba(15,23,42,0.6);font-size:13px;text-align:center}
-.progress{height:8px;background:#eef2ff;border-radius:999px;margin-top:12px;overflow:hidden}
-.progress-bar{height:100%;width:0%;background:linear-gradient(90deg,var(--accent-a),var(--accent-b));transition:width linear}
-
-/* iOS style buttons */
-.actions{display:flex;gap:12px;justify-content:center;margin-top:18px}
-.btn{padding:12px 16px;border-radius:12px;border:none;cursor:pointer;font-weight:700;display:inline-flex;align-items:center;gap:10px}
-.btn.close{background:transparent;border:1px solid rgba(15,23,42,0.06);color:var(--muted);box-shadow:0 6px 20px rgba(15,23,42,0.04)}
-.btn.telegram{background:linear-gradient(90deg,var(--accent-a),var(--accent-b));color:white;box-shadow:0 14px 40px rgba(107,70,193,0.12)}
-
-.btn.telegram .label{font-weight:800}
-
-/* final centered overlay (small icon + text) */
-.final{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;flex-direction:column;pointer-events:none;opacity:0;transition:opacity .28s ease,transform .28s ease}
-.final.show{opacity:1;pointer-events:auto}
-.final .big{width:72px;height:72px;border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:34px;color:white;box-shadow:0 28px 80px rgba(16,24,40,0.12)}
-.final.error .big{background:linear-gradient(135deg,#ff6b6b,#ff3b3b)}
-.final.success .big{background:linear-gradient(135deg,#34d399,#10b981)}
-.final .text{margin-top:10px;color:var(--muted);font-weight:700}
-
-/* hide main icon when final visible */
-.final.show ~ .center .icon{opacity:0}
-
-@media (max-width:520px){.icon{width:92px;height:92px;font-size:40px}.final .big{width:64px;height:64px;font-size:30px}}
-
+      --bg1:#f7fafc; --bg2:#ffffff;
+      --accent1:#6b46c1; --accent2:#06b6d4;
+      --muted:#0f1724; --success:#16a34a; --error:#ef4444;
+    }
+    *{box-sizing:border-box;margin:0;padding:0;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Arial}
+    body{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px;background:linear-gradient(135deg,var(--bg1),var(--bg2));color:var(--muted)}
+    .card{width:100%;max-width:520px;background:#fff;border-radius:14px;padding:26px;box-shadow:0 18px 60px rgba(2,6,23,0.08);border:1px solid rgba(2,6,23,0.04)}
+    .center{display:flex;flex-direction:column;align-items:center;gap:12px}
+    .icon{width:96px;height:96px;border-radius:18px;display:flex;align-items:center;justify-content:center;font-size:44px;color:#fff;background:linear-gradient(135deg,var(--accent1),var(--accent2));box-shadow:0 18px 60px rgba(107,70,193,0.12);transition:transform .45s ease}
+    .icon.pop{animation:pop .8s ease both}
+    @keyframes pop{0%{transform:scale(.9)}50%{transform:scale(1.06)}100%{transform:scale(1)}}
+    h1{font-size:18px;color:var(--muted);font-weight:700}
+    .lead{font-size:13px;color:rgba(15,23,42,0.6);text-align:center}
+    .status-box{width:100%;margin-top:12px;padding:12px;border-radius:10px;background:rgba(240,246,255,0.6);border-left:4px solid var(--accent1);display:flex;align-items:center;justify-content:center;transition:all .3s}
+    .status-loading{border-left-color:#f59e0b;color:#92400e}
+    .status-success{border-left-color:var(--success);color:var(--success)}
+    .status-error{border-left-color:var(--error);color:var(--error)}
+    .device-info{margin-top:14px;width:100%;background:rgba(255,255,255,0.9);padding:12px;border-radius:10px;display:flex;flex-direction:column;gap:8px;border:1px solid rgba(2,6,23,0.03)}
+    .row{display:flex;justify-content:space-between;align-items:center}
+    .label{font-size:13px;color:#64748b}
+    .value{font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,monospace;color:var(--muted);font-size:13px}
+    .count{margin-top:12px;color:rgba(15,23,42,0.65);text-align:center}
+    .progress{height:8px;background:#eef2ff;border-radius:999px;margin-top:12px;overflow:hidden}
+    .progress-bar{height:100%;width:0%;background:linear-gradient(90deg,var(--accent1),var(--accent2));transition:width linear}
+    .actions{display:flex;gap:12px;justify-content:center;margin-top:16px;width:100%}
+    .btn{padding:12px 16px;border-radius:12px;border:none;cursor:pointer;font-weight:700}
+    .btn.close{background:transparent;border:1px solid rgba(2,6,23,0.06);color:var(--muted);box-shadow:0 6px 20px rgba(2,6,23,0.04)}
+    .btn.tele{flex:1 1 auto;background:linear-gradient(90deg,var(--accent1),var(--accent2));color:white;box-shadow:0 12px 36px rgba(107,70,193,0.12);display:inline-flex;align-items:center;justify-content:center;text-decoration:none}
+    @media (max-width:480px){.icon{width:80px;height:80px;font-size:36px}}
   </style>
 </head>
 <body>
@@ -76,35 +43,23 @@ h1{font-size:20px;color:var(--muted);font-weight:700}
     <div class="center">
       <div id="icon" class="icon">⏳</div>
       <h1 id="title">Verifying Your Device</h1>
-      <div class="lead" id="subtitle">Please wait while we check the verification code.</div><div id="status" class="status loading"><div id="statusText">Checking verification code...</div></div>
-
-  <div class="device-info">
-    <div class="info">
-      <div class="label">Device ID</div>
-      <div id="deviceId" class="value">Loading...</div>
-    </div>
-    <div class="info">
-      <div class="label">Verification Code</div>
-      <div id="verificationCode" class="value">Loading...</div>
+      <div class="lead" id="subtitle">Checking verification code...</div>
+      <div id="statusBox" class="status-box status-loading">
+        <div id="statusText">Checking verification code...</div>
+      </div>
+      <div class="device-info">
+        <div class="row"><div class="label">Device ID</div><div id="deviceId" class="value">Loading...</div></div>
+        <div class="row"><div class="label">Verification Code</div><div id="verificationCode" class="value">Loading...</div></div>
+      </div>
+      <div class="count">This tab will close in <strong id="countdown">3</strong> seconds</div>
+      <div class="progress"><div id="progressBar" class="progress-bar"></div></div>
+      <div class="actions">
+        <button id="closeBtn" class="btn close">Close</button>
+        <a id="teleBtn" class="btn tele" href="https://t.me/aboutofhcs" target="_blank" rel="noopener noreferrer">Join on Telegram</a>
+      </div>
     </div>
   </div>
-
-  <div class="count">This tab will close in <strong id="countdown">3</strong> seconds</div>
-  <div class="progress"><div id="progressBar" class="progress-bar"></div></div>
-
-  <div class="actions">
-    <button id="closeBtn" class="btn close">Close</button>
-    <a id="teleBtn" class="btn telegram" href="https://t.me/aboutofhcs" target="_blank" rel="noopener noreferrer"><span class="label">Join on Telegram</span></a>
-  </div>
-</div>
-
-<div id="final" class="final" aria-hidden="true">
-  <div id="finalBox" class="big">❌</div>
-  <div id="finalText" class="text">Verification Failed</div>
-</div>
-
-  </div>  <script>
-    // Firebase config (kept)
+  <script>
     const firebaseConfig = {
       apiKey: "AIzaSyBeHXB_9nHTWofFeXKOVUlQYCrB4YhAx_w",
       authDomain: "real-apk-pin.firebaseapp.com",
@@ -116,67 +71,51 @@ h1{font-size:20px;color:var(--muted);font-weight:700}
       measurementId: "G-LPNCNHPYPF"
     };
     firebase.initializeApp(firebaseConfig);
-    const database = firebase.database();
+    const database = firebase.database();const urlParams = new URLSearchParams(window.location.search);
+const deviceId = urlParams.get('device');
+const verificationCode = urlParams.get('code');
 
-    // UI refs
-    const iconEl = document.getElementById('icon');
-    const titleEl = document.getElementById('title');
-    const subtitleEl = document.getElementById('subtitle');
-    const statusEl = document.getElementById('status');
-    const statusText = document.getElementById('statusText');
-    const deviceIdEl = document.getElementById('deviceId');
-    const verificationCodeEl = document.getElementById('verificationCode');
-    const finalEl = document.getElementById('final');
-    const finalBox = document.getElementById('finalBox');
-    const finalText = document.getElementById('finalText');
+const deviceIdEl = document.getElementById('deviceId');
+const verificationCodeEl = document.getElementById('verificationCode');
+const statusTextEl = document.getElementById('statusText');
+const statusBox = document.getElementById('statusBox');
+const iconEl = document.getElementById('icon');
+const titleEl = document.getElementById('title');
+const subtitleEl = document.getElementById('subtitle');
 
-    // URL params
-    const params = new URLSearchParams(window.location.search);
-    const deviceId = params.get('device');
-    const verificationCode = params.get('code');
+deviceIdEl.textContent = deviceId || 'Not provided';
+verificationCodeEl.textContent = verificationCode || 'Not provided';
 
-    deviceIdEl.textContent = deviceId || 'Not provided';
-    verificationCodeEl.textContent = verificationCode || 'Not provided';
+function pop(){iconEl.classList.add('pop');setTimeout(()=>iconEl.classList.remove('pop'),850);}
+function setLoading(){statusBox.className='status-box status-loading';statusTextEl.textContent='Checking verification code...';titleEl.textContent='Verifying Your Device';subtitleEl.textContent='Checking verification code...';iconEl.textContent='⏳';pop();}
+function setSuccess(){statusBox.className='status-box status-success';statusTextEl.textContent='Verification successful.';titleEl.textContent='Device Verified!';subtitleEl.textContent='Your device has been successfully verified.';iconEl.textContent='✅';pop();}
+function setError(msg){statusBox.className='status-box status-error';statusTextEl.textContent=msg;titleEl.textContent='Verification Failed';subtitleEl.textContent=msg;iconEl.textContent='❌';pop();}
 
-    function popIcon(){ iconEl.classList.add('pop'); setTimeout(()=>iconEl.classList.remove('pop'),900); }
+async function verifyDevice(){
+  if(!deviceId||!verificationCode){setError('Missing device ID or verification code');startCountdown(5);return;}
+  try{
+    setLoading();
+    const codeRef=database.ref('verification_codes/'+verificationCode);
+    const snap=await codeRef.once('value');
+    const codeData=snap.val();
+    if(!codeData){setError('Invalid verification code');startCountdown(5);return;}
+    if(codeData.used===true){setError('This verification code has already been used');startCountdown(5);return;}
+    if(codeData.deviceId!==deviceId){setError('Verification code does not match device');startCountdown(5);return;}
+    const now=Date.now();
+    if(codeData.expires_at&&now>codeData.expires_at){setError('Verification code has expired');startCountdown(5);return;}
+    await codeRef.update({used:true,used_at:now});
+    await database.ref('devices/'+deviceId).set({verification_time:now});
+    setSuccess();startCountdown(3);
+  }catch(err){console.error(err);setError('Error during verification: '+(err.message||String(err)));startCountdown(5);}
+}
 
-    function setLoading(){ statusEl.className = 'status loading'; statusText.textContent = 'Checking verification code...'; iconEl.textContent='⏳'; titleEl.textContent='Verifying Your Device'; subtitleEl.textContent='Please wait while we check the verification code.'; popIcon(); hideFinal(); }
-    function setSuccess(){ statusEl.className = 'status success'; statusText.textContent = 'Verification successful.'; iconEl.textContent='✅'; titleEl.textContent='Device Verified!'; subtitleEl.textContent='Your device has been successfully verified.'; popIcon(); showFinal('success','✅','Device Verified!'); }
-    function setError(msg){ statusEl.className = 'status error'; statusText.textContent = msg; iconEl.textContent='❌'; titleEl.textContent='Verification Failed'; subtitleEl.textContent=msg; popIcon(); showFinal('error','❌', msg); }
+function startCountdown(seconds){const countdown=document.getElementById('countdown');const bar=document.getElementById('progressBar');bar.style.transition='none';bar.style.width='0%';setTimeout(()=>{bar.style.transition=`width ${seconds}s linear`;bar.style.width='100%';},80);let c=seconds;countdown.textContent=c;const iv=setInterval(()=>{c--;countdown.textContent=c;if(c<=0){clearInterval(iv);closeTab();}},1000);}
 
-    let finalShown = false;
-    function showFinal(type, symbol, text){ if(finalShown) return; finalShown = true; finalEl.className = 'final show ' + (type==='error' ? 'error' : 'success'); finalBox.textContent = symbol; finalText.textContent = text; }
-    function hideFinal(){ finalShown = false; finalEl.className = 'final'; }
+function closeTab(){try{window.open('','_self').close();}catch(e){try{window.location.href='about:blank';}catch(e2){document.body.innerHTML='<div style="text-align:center;padding:50px;"><h2>Verification Complete</h2><p>You can close this tab.</p></div>';}}}
 
-    async function verifyDevice(){
-      if(!deviceId || !verificationCode){ setError('Missing device ID or verification code'); startCountdown(5); return; }
-      try{
-        setLoading();
-        const codeRef = database.ref('verification_codes/' + verificationCode);
-        const snapshot = await codeRef.once('value');
-        const codeData = snapshot.val();
+document.getElementById('closeBtn').addEventListener('click',closeTab);
+window.addEventListener('load',()=>{setTimeout(verifyDevice,900);setLoading();});
 
-        if(!codeData){ setError('Invalid verification code'); startCountdown(5); return; }
-        if(codeData.used === true){ setError('This verification code has already been used'); startCountdown(5); return; }
-        if(codeData.deviceId !== deviceId){ setError('Verification code does not match device'); startCountdown(5); return; }
-
-        const now = Date.now();
-        if(codeData.expires_at && now > codeData.expires_at){ setError('Verification code has expired'); startCountdown(5); return; }
-
-        await codeRef.update({ used: true, used_at: now });
-        await database.ref('devices/' + deviceId).set({ verification_time: now });
-
-        setSuccess(); startCountdown(3);
-      }catch(err){ console.error(err); setError('Error during verification: ' + (err.message || String(err))); startCountdown(5); }
-    }
-
-    function startCountdown(seconds){ const countdown = document.getElementById('countdown'); const bar = document.getElementById('progressBar'); bar.style.transition='none'; bar.style.width='0%'; setTimeout(()=>{ bar.style.transition = `width ${seconds}s linear`; bar.style.width = '100%'; },80); let c=seconds; countdown.textContent=c; const iv=setInterval(()=>{ c--; countdown.textContent=c; if(c<=0){ clearInterval(iv); closeTab(); } },1000); }
-
-    function closeTab(){ try{ window.open('','_self').close(); }catch(e){ try{ window.location.href='about:blank'; }catch(e2){ document.body.innerHTML='<div style="text-align:center;padding:50px;"><h2>Verification Complete</h2><p>You can close this tab.</p></div>'; } } }
-
-    document.getElementById('closeBtn').addEventListener('click', closeTab);
-
-    // start
-    window.addEventListener('load', ()=>{ setTimeout(verifyDevice,700); setLoading(); });
-  </script></body>
+  </script>
+</body>
 </html>
