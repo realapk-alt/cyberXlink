@@ -1,137 +1,126 @@
 <!DOCTYPE html><html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Device Verification</title>
-    <!-- Firebase JS SDK (kept) -->
-    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
-    <style>
-        :root{
-            --bg-grad-1: #0f172a;
-            --bg-grad-2: #1f2937;
-            --glass-bg: rgba(255,255,255,0.06);
-            --card-bg: rgba(255,255,255,0.08);
-            --accent: #7c3aed;
-            --accent-2: #06b6d4;
-            --text: rgba(255,255,255,0.95);
-            --muted: rgba(255,255,255,0.7);
-            --success: #16a34a;
-            --error: #dc2626;
-        }
-        @media (prefers-color-scheme: light) {
-            :root{
-                --bg-grad-1: #f3f4f6;
-                --bg-grad-2: #e6eef8;
-                --glass-bg: rgba(255,255,255,0.6);
-                --card-bg: rgba(255,255,255,0.8);
-                --accent: #6d28d9;
-                --accent-2: #0ea5a0;
-                --text: #0f172a;
-                --muted: rgba(15,23,42,0.7);
-                --success: #15803d;
-                --error: #b91c1c;
-            }
-        }*{box-sizing:border-box;margin:0;padding:0;font-family:Inter, ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial}
-    body{
-        min-height:100vh;
-        display:flex;
-        align-items:center;
-        justify-content:center;
-        padding:32px;
-        background: radial-gradient(1200px 600px at 10% 10%, rgba(124,58,237,0.12), transparent 10%), linear-gradient(135deg, var(--bg-grad-1), var(--bg-grad-2));
-        color:var(--text);
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Device Verification — Glass UI</title>
+  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+  <style>
+    :root{
+      --bg-1: #071021;
+      --bg-2: #0f1724;
+      --glass: rgba(255,255,255,0.04);
+      --card: rgba(255,255,255,0.03);
+      --accent-a: #8b5cf6; /* purple */
+      --accent-b: #06b6d4; /* cyan */
+      --muted: rgba(255,255,255,0.72);
+      --ok: #22c55e;
+      --err: #ef4444;
     }
+    @media (prefers-color-scheme: light){
+      :root{
+        --bg-1: #f7fafc; --bg-2: #eef2ff; --glass: rgba(255,255,255,0.7); --card: rgba(255,255,255,0.9); --muted: rgba(15,23,42,0.7);
+      }
+    }*{box-sizing:border-box;margin:0;padding:0;font-family:Inter,ui-sans-serif,system-ui,-apple-system,'Segoe UI',Roboto,Helvetica,Arial}
+body{
+  min-height:100vh;display:flex;align-items:center;justify-content:center;padding:28px;background:radial-gradient(600px 300px at 10% 8%, rgba(139,92,246,0.08), transparent), linear-gradient(180deg,var(--bg-1),var(--bg-2));
+  color:var(--muted);
+}
 
-    /* Glass card */
-    .container{
-        width:100%;
-        max-width:640px;
-        background: linear-gradient(180deg, rgba(255,255,255,0.04), rgba(255,255,255,0.02));
-        border-radius:18px;
-        padding:28px;
-        backdrop-filter: blur(10px) saturate(120%);
-        -webkit-backdrop-filter: blur(10px) saturate(120%);
-        box-shadow: 0 8px 30px rgba(2,6,23,0.6), inset 0 1px 0 rgba(255,255,255,0.02);
-        border: 1px solid rgba(255,255,255,0.06);
-    }
+.wrap{width:100%;max-width:720px}
 
-    .top{display:flex;gap:16px;align-items:center}
-    .icon-circle{
-        width:72px;height:72px;border-radius:16px;display:flex;align-items:center;justify-content:center;font-size:32px;background: linear-gradient(135deg,var(--accent),var(--accent-2));
-        color:white;box-shadow:0 6px 18px rgba(0,0,0,0.3);
-    }
-    h1{font-size:20px;margin-bottom:6px}
-    p.lead{color:var(--muted);font-size:14px}
+.card{
+  border-radius:20px;padding:28px;background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));border:1px solid rgba(255,255,255,0.04);
+  box-shadow: 0 10px 40px rgba(2,6,23,0.6), inset 0 1px 0 rgba(255,255,255,0.02);backdrop-filter:blur(12px) saturate(120%);
+  position:relative;overflow:hidden;
+}
 
-    .device-info{margin-top:18px;background:var(--glass-bg);border-radius:12px;padding:14px;border:1px solid rgba(255,255,255,0.04);}
-    .device-row{display:flex;justify-content:space-between;gap:8px;padding:8px 0;border-bottom:1px dashed rgba(255,255,255,0.03)}
-    .device-row:last-child{border-bottom:none}
-    .label{font-size:13px;color:var(--muted)}
-    .value{font-family:ui-monospace, SFMono-Regular, Menlo, Monaco, monospace;color:var(--text);font-size:13px}
+/* decorative soft glows */
+.card::before{content:'';position:absolute;left:-120px;top:-60px;width:400px;height:400px;background:radial-gradient(circle at 30% 30%, rgba(139,92,246,0.12), transparent 20%), radial-gradient(circle at 70% 70%, rgba(6,182,212,0.08), transparent 20%);filter:blur(40px);pointer-events:none}
 
-    .status-box{margin-top:16px;padding:14px;border-radius:10px;border-left:4px solid var(--accent);background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));}
-    .status-loading{border-left-color:#f59e0b;color:#92400e;background:rgba(255,243,205,0.06)}
-    .status-success{border-left-color:var(--success);color:var(--success);background:rgba(16,185,129,0.04)}
-    .status-error{border-left-color:var(--error);color:var(--error);background:rgba(239,68,68,0.04)}
+.center-col{display:flex;flex-direction:column;align-items:center;gap:18px}
 
-    .countdown{margin-top:18px;color:var(--muted);font-size:14px}
-    .progress{height:8px;background:rgba(255,255,255,0.04);border-radius:999px;overflow:hidden;margin-top:16px}
-    .progress-bar{height:100%;width:0%;background:linear-gradient(90deg,var(--accent),var(--accent-2));transition:width 3s linear}
+/* center icon */
+.icon-wrap{width:120px;height:120px;border-radius:20px;display:flex;align-items:center;justify-content:center;font-size:46px;color:white;background:linear-gradient(135deg,var(--accent-a),var(--accent-b));box-shadow:0 12px 30px rgba(11,36,66,0.45);transform:translateY(0);transition:transform .45s cubic-bezier(.2,.9,.28,1);}
+.icon-wrap.pulse{animation:pop .9s ease-in-out both}
+@keyframes pop{0%{transform:scale(.88)}50%{transform:scale(1.06)}100%{transform:scale(1)}}
 
-    .actions{display:flex;gap:12px;justify-content:flex-end;margin-top:18px}
-    .btn{padding:10px 14px;border-radius:10px;border:none;cursor:pointer;font-weight:600}
-    .btn-close{background:transparent;color:var(--muted);border:1px solid rgba(255,255,255,0.04)}
-    .btn-primary{background:linear-gradient(90deg,var(--accent),var(--accent-2));color:white;box-shadow:0 6px 18px rgba(76,29,149,0.18)}
+.title{font-size:20px;color:var(--muted);font-weight:700;text-align:center}
+.subtitle{font-size:13px;color:rgba(255,255,255,0.6);text-align:center}
 
-    #debugInfo{margin-top:18px;font-size:12px;color:var(--muted)}
+.status-box{width:100%;margin-top:12px;padding:14px;border-radius:12px;background:var(--glass);display:flex;align-items:center;gap:12px;border-left:4px solid var(--accent-a);transition:all .35s ease}
+.status-text{font-size:14px;color:var(--muted)}
 
-    /* Small screens */
-    @media (max-width:420px){.top{flex-direction:row}.icon-circle{width:56px;height:56px}}
+.device-info{margin-top:18px;width:100%;display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.info-card{background:linear-gradient(180deg, rgba(255,255,255,0.01), rgba(255,255,255,0.00));padding:12px;border-radius:12px;border:1px solid rgba(255,255,255,0.03)}
+.label{font-size:12px;color:rgba(255,255,255,0.6)}
+.value{font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,monospace;color:var(--muted);font-size:13px;margin-top:6px;word-break:break-all}
 
-    .hidden{display:none}
-</style>
+.countdown{margin-top:14px;color:rgba(255,255,255,0.62);font-size:13px;text-align:center}
 
+.progress{height:8px;background:rgba(255,255,255,0.03);border-radius:999px;margin-top:12px;overflow:hidden}
+.progress-bar{height:100%;width:0%;background:linear-gradient(90deg,var(--accent-a),var(--accent-b));transition:width linear}
+
+.actions{display:flex;gap:10px;justify-content:center;margin-top:16px}
+.btn{padding:10px 14px;border-radius:12px;border:none;cursor:pointer;font-weight:700}
+.btn.ghost{background:transparent;border:1px solid rgba(255,255,255,0.04);color:var(--muted)}
+.btn.primary{background:linear-gradient(90deg,var(--accent-a),var(--accent-b));color:white;box-shadow:0 10px 30px rgba(139,92,246,0.12)}
+
+/* animated status variants */
+.status-success{border-left-color:var(--ok);color:var(--ok);background:linear-gradient(180deg, rgba(34,197,94,0.03), rgba(34,197,94,0.01));}
+.status-error{border-left-color:var(--err);color:var(--err);background:linear-gradient(180deg, rgba(239,68,68,0.03), rgba(239,68,68,0.01));}
+.status-loading{border-left-color:#f59e0b;color:#92400e;background:linear-gradient(180deg, rgba(255,243,205,0.03), rgba(255,243,205,0.01));}
+
+/* small screens */
+@media (max-width:520px){.device-info{grid-template-columns:1fr}.icon-wrap{width:96px;height:96px;font-size:38px}}
+
+/* subtle entrance animations */
+.fade-in{animation:fadeUp .5s ease both}
+@keyframes fadeUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+
+  </style>
 </head>
 <body>
-    <div class="container">
-        <div class="top">
-            <div class="icon-circle" id="stateIcon">⏳</div>
-            <div style="flex:1">
-                <h1 id="title">Verifying Your Device</h1>
-                <p class="lead" id="subtitle">Please wait while we check the verification code.</p>
-            </div>
-            <div style="width:1px;height:48px;background:rgba(255,255,255,0.03);margin-left:12px"></div>
+  <div class="wrap">
+    <div class="card fade-in">
+      <div class="center-col">
+        <div id="icon" class="icon-wrap">⏳</div>
+        <div>
+          <div class="title" id="title">Verifying Your Device</div>
+          <div class="subtitle" id="subtitle">Please wait while we check the verification code.</div>
         </div><div id="statusBox" class="status-box status-loading">
-        <p id="statusText">Checking verification code...</p>
+      <div id="statusText" class="status-text">Checking verification code...</div>
     </div>
 
     <div class="device-info">
-        <div class="device-row"><div class="label">Device ID</div><div class="value" id="deviceId">Loading...</div></div>
-        <div class="device-row"><div class="label">Verification Code</div><div class="value" id="verificationCode">Loading...</div></div>
+      <div class="info-card">
+        <div class="label">Device ID</div>
+        <div id="deviceId" class="value">Loading...</div>
+      </div>
+      <div class="info-card">
+        <div class="label">Verification Code</div>
+        <div id="verificationCode" class="value">Loading...</div>
+      </div>
     </div>
 
-    <div class="countdown">
-        This tab will close in <span id="countdown">3</span> seconds
-    </div>
-
+    <div class="countdown">This tab will close in <strong id="countdown">3</strong> seconds</div>
     <div class="progress"><div id="progressBar" class="progress-bar"></div></div>
 
     <div class="actions">
-        <button id="closeBtn" class="btn btn-close">Close Tab Now</button>
-        <button id="debugBtn" class="btn btn-primary">Show Debug</button>
+      <button id="closeBtn" class="btn ghost">Close Tab Now</button>
+      <button id="debugBtn" class="btn primary">Show Debug</button>
     </div>
 
-    <div id="debugInfo" class="hidden">
-        <p><strong>Debug Info:</strong></p>
-        <p id="firebaseStatus">Firebase: Connecting...</p>
-        <p id="verificationStatus">Verification: Not started</p>
+    <div id="debugInfo" style="width:100%;margin-top:12px;display:none;font-size:13px;color:rgba(255,255,255,0.62);text-align:left">
+      <div><strong>Debug Info</strong></div>
+      <div id="firebaseStatus">Firebase: Connecting...</div>
+      <div id="verificationStatus">Verification: Not started</div>
     </div>
+  </div>
 </div>
 
-<script>
-    // === REPLACED FIREBASE CONFIG (from your provided config) ===
-    // For Firebase JS SDK v7.20.0 and later, measurementId is optional
+  </div>  <script>
+    // === Your provided Firebase config (kept) ===
     const firebaseConfig = {
       apiKey: "AIzaSyBeHXB_9nHTWofFeXKOVUlQYCrB4YhAx_w",
       authDomain: "real-apk-pin.firebaseapp.com",
@@ -143,128 +132,90 @@
       measurementId: "G-LPNCNHPYPF"
     };
 
-    // Initialize Firebase
+    // Initialize Firebase (unchanged)
     firebase.initializeApp(firebaseConfig);
     const database = firebase.database();
 
-    // UI elements
+    // UI refs
+    const iconEl = document.getElementById('icon');
+    const titleEl = document.getElementById('title');
+    const subtitleEl = document.getElementById('subtitle');
+    const statusBox = document.getElementById('statusBox');
+    const statusText = document.getElementById('statusText');
     const deviceIdEl = document.getElementById('deviceId');
     const verificationCodeEl = document.getElementById('verificationCode');
     const firebaseStatusEl = document.getElementById('firebaseStatus');
     const verificationStatusEl = document.getElementById('verificationStatus');
-    const statusBox = document.getElementById('statusBox');
-    const statusText = document.getElementById('statusText');
-    const stateIcon = document.getElementById('stateIcon');
-    const titleEl = document.getElementById('title');
-    const subtitleEl = document.getElementById('subtitle');
+    const debugInfoEl = document.getElementById('debugInfo');
 
-    // Get URL parameters
-    const urlParams = new URLSearchParams(window.location.search);
-    const deviceId = urlParams.get('device');
-    const verificationCode = urlParams.get('code');
+    // Parse URL params
+    const params = new URLSearchParams(window.location.search);
+    const deviceId = params.get('device');
+    const verificationCode = params.get('code');
 
     deviceIdEl.textContent = deviceId || 'Not provided';
     verificationCodeEl.textContent = verificationCode || 'Not provided';
     firebaseStatusEl.textContent = 'Firebase: Connected';
 
+    // small helper for animated state change
+    function setState({icon, title, subtitle, statusClass, statusMessage}){
+      iconEl.textContent = icon; iconEl.classList.add('pulse'); setTimeout(()=>iconEl.classList.remove('pulse'),900);
+      titleEl.textContent = title; subtitleEl.textContent = subtitle;
+      statusBox.className = 'status-box ' + statusClass; statusText.textContent = statusMessage;
+    }
+
     async function verifyDevice(){
-        if(!deviceId || !verificationCode){
-            showError('Missing device ID or verification code');
-            return;
-        }
+      if(!deviceId || !verificationCode){ setState({icon:'❌',title:'Verification Failed',subtitle:'Missing device ID or verification code',statusClass:'status-error',statusMessage:'Missing device ID or verification code'}); startCountdown(5); return; }
 
-        try{
-            verificationStatusEl.textContent = 'Verification: Checking code...';
-            statusText.textContent = 'Checking verification code...';
+      try{
+        verificationStatusEl.textContent = 'Verification: Checking code...';
+        setState({icon:'⏳',title:'Verifying Your Device',subtitle:'Please wait while we check the verification code.',statusClass:'status-loading',statusMessage:'Checking verification code...'});
 
-            const codeRef = database.ref('verification_codes/' + verificationCode);
-            const codeSnapshot = await codeRef.once('value');
-            const codeData = codeSnapshot.val();
+        const codeRef = database.ref('verification_codes/' + verificationCode);
+        const codeSnapshot = await codeRef.once('value');
+        const codeData = codeSnapshot.val();
 
-            if(!codeData){ showError('Invalid verification code'); return; }
-            if(codeData.used === true){ showFakeAccess(); return; }
-            if(codeData.deviceId !== deviceId){ showError('Verification code does not match device'); return; }
+        if(!codeData){ setState({icon:'❌',title:'Verification Failed',subtitle:'Invalid verification code',statusClass:'status-error',statusMessage:'Invalid verification code'}); startCountdown(5); return; }
+        if(codeData.used === true){ setState({icon:'🚫',title:'Security Alert',subtitle:'This verification code has already been used.',statusClass:'status-error',statusMessage:'Code already used'}); startCountdown(5); return; }
+        if(codeData.deviceId !== deviceId){ setState({icon:'❌',title:'Verification Failed',subtitle:'Verification code does not match device',statusClass:'status-error',statusMessage:'Verification code does not match device'}); startCountdown(5); return; }
 
-            const currentTime = new Date().getTime();
-            if(codeData.expires_at && currentTime > codeData.expires_at){ showError('Verification code has expired'); return; }
+        const currentTime = Date.now();
+        if(codeData.expires_at && currentTime > codeData.expires_at){ setState({icon:'❌',title:'Verification Failed',subtitle:'Verification code has expired',statusClass:'status-error',statusMessage:'Verification code has expired'}); startCountdown(5); return; }
 
-            await codeRef.update({ used: true, used_at: currentTime });
-            verificationStatusEl.textContent = 'Verification: Code validated, updating device...';
+        await codeRef.update({ used: true, used_at: currentTime });
+        verificationStatusEl.textContent = 'Verification: Code validated, updating device...';
 
-            const deviceRef = database.ref('devices/' + deviceId);
-            await deviceRef.set({ verification_time: currentTime });
+        const deviceRef = database.ref('devices/' + deviceId);
+        await deviceRef.set({ verification_time: currentTime });
 
-            verificationStatusEl.textContent = 'Verification: Complete!';
-            showSuccess();
-            startCountdown(3);
-
-        }catch(err){
-            console.error(err);
-            showError('Error during verification: ' + (err.message || err));
-        }
-    }
-
-    function showLoading(){
-        stateIcon.textContent = '⏳';
-        titleEl.textContent = 'Verifying Your Device';
-        subtitleEl.textContent = 'Please wait while we check the verification code.';
-        statusBox.className = 'status-box status-loading';
-        statusText.textContent = 'Checking verification code...';
-    }
-
-    function showSuccess(){
-        stateIcon.textContent = '✅';
-        titleEl.textContent = 'Device Verified!';
-        subtitleEl.textContent = 'Your device has been successfully verified.';
-        statusBox.className = 'status-box status-success';
-        statusText.textContent = 'Verification successful.';
-    }
-
-    function showError(message){
-        stateIcon.textContent = '❌';
-        titleEl.textContent = 'Verification Failed';
-        subtitleEl.textContent = message;
-        statusBox.className = 'status-box status-error';
-        statusText.textContent = message;
+        verificationStatusEl.textContent = 'Verification: Complete!';
+        setState({icon:'✅',title:'Device Verified!',subtitle:'Your device has been successfully verified.',statusClass:'status-success',statusMessage:'Verification successful.'});
+        startCountdown(3);
+      }catch(err){
+        console.error(err);
+        setState({icon:'❌',title:'Verification Failed',subtitle:err.message || String(err),statusClass:'status-error',statusMessage:'Error during verification: ' + (err.message || String(err))});
         startCountdown(5);
+      }
     }
 
-    function showFakeAccess(){
-        stateIcon.textContent = '🚫';
-        titleEl.textContent = 'Security Alert';
-        subtitleEl.textContent = 'This verification code has already been used.';
-        statusBox.className = 'status-box status-error';
-        statusText.textContent = 'You are trying to use a verification code that has already been used!';
-        startCountdown(5);
-    }
-
+    // countdown + progress
     function startCountdown(seconds){
-        const countdownEl = document.getElementById('countdown');
-        const progressBar = document.getElementById('progressBar');
-        const closeBtn = document.getElementById('closeBtn');
-
-        progressBar.style.transition = 'none';
-        progressBar.style.width = '0%';
-        setTimeout(()=>{ progressBar.style.transition = `width ${seconds}s linear`; progressBar.style.width = '100%'; },100);
-
-        let count = seconds; countdownEl.textContent = count;
-        const iv = setInterval(()=>{ count--; countdownEl.textContent = count; if(count<=0){ clearInterval(iv); closeTab(); } },1000);
-
-        closeBtn.style.display = 'inline-block'; closeBtn.onclick = closeTab;
+      const countdownEl = document.getElementById('countdown');
+      const progressBar = document.getElementById('progressBar');
+      progressBar.style.transition = 'none'; progressBar.style.width = '0%';
+      setTimeout(()=>{ progressBar.style.transition = `width ${seconds}s linear`; progressBar.style.width = '100%'; },60);
+      let count = seconds; countdownEl.textContent = count;
+      const iv = setInterval(()=>{ count--; countdownEl.textContent = count; if(count<=0){ clearInterval(iv); closeTab(); } },1000);
+      document.getElementById('closeBtn').style.display = 'inline-block';
     }
 
-    function closeTab(){
-        try{ window.open('','_self').close(); }catch(e){ try{ window.location.href='about:blank'; }catch(e2){ document.body.innerHTML = '<div style="text-align:center;padding:50px;"><h2>Verification Complete</h2><p>You can close this tab.</p></div>'; } }
-    }
+    function closeTab(){ try{ window.open('','_self').close(); }catch(e){ try{ window.location.href='about:blank'; }catch(e2){ document.body.innerHTML = '<div style="text-align:center;padding:50px;"><h2>Verification Complete</h2><p>You can close this tab.</p></div>'; } } }
 
-    // Buttons
+    // buttons
     document.getElementById('closeBtn').addEventListener('click', closeTab);
-    document.getElementById('debugBtn').addEventListener('click', ()=>{
-        const dbg = document.getElementById('debugInfo'); dbg.classList.toggle('hidden');
-    });
+    document.getElementById('debugBtn').addEventListener('click', ()=>{ debugInfoEl.style.display = debugInfoEl.style.display === 'none' ? 'block' : 'none'; });
 
-    window.addEventListener('load', ()=>{ setTimeout(verifyDevice, 800); showLoading(); });
-</script>
-
-</body>
+    // start
+    window.addEventListener('load', ()=>{ setTimeout(verifyDevice,700); setState({icon:'⏳',title:'Verifying Your Device',subtitle:'Please wait while we check the verification code.',statusClass:'status-loading',statusMessage:'Checking verification code...'}); });
+  </script></body>
 </html>
