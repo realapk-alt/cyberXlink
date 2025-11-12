@@ -1,371 +1,270 @@
-<!DOCTYPE html>
-<html lang="en">
+<!DOCTYPE html><html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Device Verification</title>
+    <!-- Firebase JS SDK (kept) -->
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        :root{
+            --bg-grad-1: #0f172a;
+            --bg-grad-2: #1f2937;
+            --glass-bg: rgba(255,255,255,0.06);
+            --card-bg: rgba(255,255,255,0.08);
+            --accent: #7c3aed;
+            --accent-2: #06b6d4;
+            --text: rgba(255,255,255,0.95);
+            --muted: rgba(255,255,255,0.7);
+            --success: #16a34a;
+            --error: #dc2626;
         }
-        
-        body {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            padding: 20px;
-        }
-        
-        .container {
-            background: white;
-            padding: 40px;
-            border-radius: 15px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
-            max-width: 500px;
-            width: 90%;
-            text-align: center;
-        }
-        
-        .icon {
-            font-size: 60px;
-            margin-bottom: 20px;
-        }
-        
-        h1 {
-            color: #333;
-            margin-bottom: 15px;
-        }
-        
-        .device-info {
-            background: #f8f9fa;
-            padding: 15px;
-            border-radius: 8px;
-            margin: 20px 0;
-            text-align: left;
-        }
-        
-        .info-label {
-            font-weight: bold;
-            color: #555;
-        }
-        
-        .info-value {
-            font-family: monospace;
-            color: #4a00e0;
-            word-break: break-all;
-        }
-        
-        .status-box {
-            padding: 20px;
-            border-radius: 8px;
-            margin: 20px 0;
-            border-left: 4px solid #4a00e0;
-        }
-        
-        .status-loading {
-            background: #fff3cd;
-            color: #856404;
-            border-left-color: #ffc107;
-        }
-        
-        .status-success {
-            background: #d4edda;
-            color: #155724;
-            border-left-color: #28a745;
-        }
-        
-        .status-error {
-            background: #f8d7da;
-            color: #721c24;
-            border-left-color: #dc3545;
-        }
-        
-        .status-warning {
-            background: #fff3cd;
-            color: #856404;
-            border-left-color: #ffc107;
-        }
-        
-        .countdown {
-            font-size: 16px;
-            color: #666;
-            margin: 20px 0;
-        }
-        
-        .progress {
-            height: 6px;
-            background: #e9ecef;
-            border-radius: 3px;
-            margin: 25px 0;
-            overflow: hidden;
-        }
-        
-        .progress-bar {
-            height: 100%;
-            background: #28a745;
-            width: 0%;
-            transition: width 3s linear;
-        }
-        
-        .btn {
-            background: #dc3545;
-            color: white;
-            border: none;
-            padding: 12px 24px;
-            border-radius: 6px;
-            font-size: 16px;
-            cursor: pointer;
-            margin-top: 15px;
-        }
-        
-        .hidden {
-            display: none;
-        }
-    </style>
+        @media (prefers-color-scheme: light) {
+            :root{
+                --bg-grad-1: #f3f4f6;
+                --bg-grad-2: #e6eef8;
+                --glass-bg: rgba(255,255,255,0.6);
+                --card-bg: rgba(255,255,255,0.8);
+                --accent: #6d28d9;
+                --accent-2: #0ea5a0;
+                --text: #0f172a;
+                --muted: rgba(15,23,42,0.7);
+                --success: #15803d;
+                --error: #b91c1c;
+            }
+        }*{box-sizing:border-box;margin:0;padding:0;font-family:Inter, ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial}
+    body{
+        min-height:100vh;
+        display:flex;
+        align-items:center;
+        justify-content:center;
+        padding:32px;
+        background: radial-gradient(1200px 600px at 10% 10%, rgba(124,58,237,0.12), transparent 10%), linear-gradient(135deg, var(--bg-grad-1), var(--bg-grad-2));
+        color:var(--text);
+    }
+
+    /* Glass card */
+    .container{
+        width:100%;
+        max-width:640px;
+        background: linear-gradient(180deg, rgba(255,255,255,0.04), rgba(255,255,255,0.02));
+        border-radius:18px;
+        padding:28px;
+        backdrop-filter: blur(10px) saturate(120%);
+        -webkit-backdrop-filter: blur(10px) saturate(120%);
+        box-shadow: 0 8px 30px rgba(2,6,23,0.6), inset 0 1px 0 rgba(255,255,255,0.02);
+        border: 1px solid rgba(255,255,255,0.06);
+    }
+
+    .top{display:flex;gap:16px;align-items:center}
+    .icon-circle{
+        width:72px;height:72px;border-radius:16px;display:flex;align-items:center;justify-content:center;font-size:32px;background: linear-gradient(135deg,var(--accent),var(--accent-2));
+        color:white;box-shadow:0 6px 18px rgba(0,0,0,0.3);
+    }
+    h1{font-size:20px;margin-bottom:6px}
+    p.lead{color:var(--muted);font-size:14px}
+
+    .device-info{margin-top:18px;background:var(--glass-bg);border-radius:12px;padding:14px;border:1px solid rgba(255,255,255,0.04);}
+    .device-row{display:flex;justify-content:space-between;gap:8px;padding:8px 0;border-bottom:1px dashed rgba(255,255,255,0.03)}
+    .device-row:last-child{border-bottom:none}
+    .label{font-size:13px;color:var(--muted)}
+    .value{font-family:ui-monospace, SFMono-Regular, Menlo, Monaco, monospace;color:var(--text);font-size:13px}
+
+    .status-box{margin-top:16px;padding:14px;border-radius:10px;border-left:4px solid var(--accent);background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));}
+    .status-loading{border-left-color:#f59e0b;color:#92400e;background:rgba(255,243,205,0.06)}
+    .status-success{border-left-color:var(--success);color:var(--success);background:rgba(16,185,129,0.04)}
+    .status-error{border-left-color:var(--error);color:var(--error);background:rgba(239,68,68,0.04)}
+
+    .countdown{margin-top:18px;color:var(--muted);font-size:14px}
+    .progress{height:8px;background:rgba(255,255,255,0.04);border-radius:999px;overflow:hidden;margin-top:16px}
+    .progress-bar{height:100%;width:0%;background:linear-gradient(90deg,var(--accent),var(--accent-2));transition:width 3s linear}
+
+    .actions{display:flex;gap:12px;justify-content:flex-end;margin-top:18px}
+    .btn{padding:10px 14px;border-radius:10px;border:none;cursor:pointer;font-weight:600}
+    .btn-close{background:transparent;color:var(--muted);border:1px solid rgba(255,255,255,0.04)}
+    .btn-primary{background:linear-gradient(90deg,var(--accent),var(--accent-2));color:white;box-shadow:0 6px 18px rgba(76,29,149,0.18)}
+
+    #debugInfo{margin-top:18px;font-size:12px;color:var(--muted)}
+
+    /* Small screens */
+    @media (max-width:420px){.top{flex-direction:row}.icon-circle{width:56px;height:56px}}
+
+    .hidden{display:none}
+</style>
+
 </head>
 <body>
     <div class="container">
-        <!-- Loading State -->
-        <div id="loadingState">
-            <div class="icon">⏳</div>
-            <h1>Verifying Your Device</h1>
-            <div class="status-box status-loading">
-                <p>Checking verification code...</p>
+        <div class="top">
+            <div class="icon-circle" id="stateIcon">⏳</div>
+            <div style="flex:1">
+                <h1 id="title">Verifying Your Device</h1>
+                <p class="lead" id="subtitle">Please wait while we check the verification code.</p>
             </div>
-        </div>
-        
-        <!-- Success State -->
-        <div id="successState" class="hidden">
-            <div class="icon">✅</div>
-            <h1>Device Verified!</h1>
-            <div class="status-box status-success">
-                <p>Your device has been successfully verified!</p>
-            </div>
-        </div>
-        
-        <!-- Error State -->
-        <div id="errorState" class="hidden">
-            <div class="icon">❌</div>
-            <h1>Verification Failed</h1>
-            <div class="status-box status-error">
-                <p id="errorMessage">There was an error verifying your device.</p>
-            </div>
-        </div>
-        
-        <!-- Fake Access Detected -->
-        <div id="fakeAccessState" class="hidden">
-            <div class="icon">🚫</div>
-            <h1>Security Alert</h1>
-            <div class="status-box status-error">
-                <p>You are trying to use a verification code that has already been used!</p>
-                <p style="margin-top: 10px; font-size: 14px;">Each verification code can only be used once.</p>
-            </div>
-        </div>
-        
-        <!-- Device Info -->
-        <div class="device-info">
-            <p><span class="info-label">Device ID:</span> <span class="info-value" id="deviceId">Loading...</span></p>
-            <p><span class="info-label">Verification Code:</span> <span class="info-value" id="verificationCode">Loading...</span></p>
-        </div>
-        
-        <div class="countdown">
-            This tab will close in <span id="countdown">3</span> seconds
-        </div>
-        
-        <div class="progress">
-            <div class="progress-bar" id="progressBar"></div>
-        </div>
-        
-        <button class="btn" id="closeBtn">Close Tab Now</button>
-        
-        <div id="debugInfo" style="font-size: 12px; color: #666; margin-top: 20px; text-align: left;">
-            <p><strong>Debug Info:</strong></p>
-            <p id="firebaseStatus">Firebase: Connecting...</p>
-            <p id="verificationStatus">Verification: Not started</p>
-        </div>
+            <div style="width:1px;height:48px;background:rgba(255,255,255,0.03);margin-left:12px"></div>
+        </div><div id="statusBox" class="status-box status-loading">
+        <p id="statusText">Checking verification code...</p>
     </div>
 
-    <script>
-ttt
-const firebaseConfig = {
-  apiKey: "AIzaSyBeHXB_9nHTWofFeXKOVUlQYCrB4YhAx_w",
-  authDomain: "real-apk-pin.firebaseapp.com",
-  databaseURL: "https://real-apk-pin-default-rtdb.firebaseio.com",
-  projectId: "real-apk-pin",
-  storageBucket: "real-apk-pin.firebasestorage.app",
-  messagingSenderId: "345555950697",
-  appId: "1:345555950697:web:e215d3e0850299e02096f8",
-  measurementId: "G-LPNCNHPYPF"
-};
+    <div class="device-info">
+        <div class="device-row"><div class="label">Device ID</div><div class="value" id="deviceId">Loading...</div></div>
+        <div class="device-row"><div class="label">Verification Code</div><div class="value" id="verificationCode">Loading...</div></div>
+    </div>
 
+    <div class="countdown">
+        This tab will close in <span id="countdown">3</span> seconds
+    </div>
 
+    <div class="progress"><div id="progressBar" class="progress-bar"></div></div>
 
-        // Initialize Firebase
-        firebase.initializeApp(firebaseConfig);
-        const database = firebase.database();
+    <div class="actions">
+        <button id="closeBtn" class="btn btn-close">Close Tab Now</button>
+        <button id="debugBtn" class="btn btn-primary">Show Debug</button>
+    </div>
 
-        // Get URL parameters
-        const urlParams = new URLSearchParams(window.location.search);
-        const deviceId = urlParams.get('device');
-        const verificationCode = urlParams.get('code');
+    <div id="debugInfo" class="hidden">
+        <p><strong>Debug Info:</strong></p>
+        <p id="firebaseStatus">Firebase: Connecting...</p>
+        <p id="verificationStatus">Verification: Not started</p>
+    </div>
+</div>
 
-        // Display device info
-        document.getElementById('deviceId').textContent = deviceId || 'Not provided';
-        document.getElementById('verificationCode').textContent = verificationCode || 'Not provided';
+<script>
+    // === REPLACED FIREBASE CONFIG (from your provided config) ===
+    // For Firebase JS SDK v7.20.0 and later, measurementId is optional
+    const firebaseConfig = {
+      apiKey: "AIzaSyBeHXB_9nHTWofFeXKOVUlQYCrB4YhAx_w",
+      authDomain: "real-apk-pin.firebaseapp.com",
+      databaseURL: "https://real-apk-pin-default-rtdb.firebaseio.com",
+      projectId: "real-apk-pin",
+      storageBucket: "real-apk-pin.firebasestorage.app",
+      messagingSenderId: "345555950697",
+      appId: "1:345555950697:web:e215d3e0850299e02096f8",
+      measurementId: "G-LPNCNHPYPF"
+    };
 
-        // Update debug info
-        document.getElementById('firebaseStatus').textContent = 'Firebase: Connected';
+    // Initialize Firebase
+    firebase.initializeApp(firebaseConfig);
+    const database = firebase.database();
 
-        async function verifyDevice() {
-            if (!deviceId || !verificationCode) {
-                showError('Missing device ID or verification code');
-                return;
-            }
+    // UI elements
+    const deviceIdEl = document.getElementById('deviceId');
+    const verificationCodeEl = document.getElementById('verificationCode');
+    const firebaseStatusEl = document.getElementById('firebaseStatus');
+    const verificationStatusEl = document.getElementById('verificationStatus');
+    const statusBox = document.getElementById('statusBox');
+    const statusText = document.getElementById('statusText');
+    const stateIcon = document.getElementById('stateIcon');
+    const titleEl = document.getElementById('title');
+    const subtitleEl = document.getElementById('subtitle');
 
-            try {
-                document.getElementById('verificationStatus').textContent = 'Verification: Checking code...';
-                
-                // Check verification code in Firebase
-                const codeRef = database.ref('verification_codes/' + verificationCode);
-                const codeSnapshot = await codeRef.once('value');
-                const codeData = codeSnapshot.val();
+    // Get URL parameters
+    const urlParams = new URLSearchParams(window.location.search);
+    const deviceId = urlParams.get('device');
+    const verificationCode = urlParams.get('code');
 
-                if (!codeData) {
-                    showError('Invalid verification code');
-                    return;
-                }
+    deviceIdEl.textContent = deviceId || 'Not provided';
+    verificationCodeEl.textContent = verificationCode || 'Not provided';
+    firebaseStatusEl.textContent = 'Firebase: Connected';
 
-                if (codeData.used === true) {
-                    // Code already used - show fake access message
-                    showFakeAccess();
-                    return;
-                }
-
-                if (codeData.deviceId !== deviceId) {
-                    showError('Verification code does not match device');
-                    return;
-                }
-
-                // Check if code is expired (10 minutes)
-                const currentTime = new Date().getTime();
-                if (codeData.expires_at && currentTime > codeData.expires_at) {
-                    showError('Verification code has expired');
-                    return;
-                }
-
-                // Mark code as used
-                await codeRef.update({
-                    used: true,
-                    used_at: currentTime
-                });
-
-                document.getElementById('verificationStatus').textContent = 'Verification: Code validated, updating device...';
-
-                // Update device verification - STORE ONLY VERIFICATION TIME
-                const deviceRef = database.ref('devices/' + deviceId);
-                await deviceRef.set({
-                    verification_time: currentTime
-                });
-
-                document.getElementById('verificationStatus').textContent = 'Verification: Complete!';
-                
-                // Show success and start countdown
-                showSuccess();
-                startCountdown(3);
-
-            } catch (error) {
-                console.error('Verification error:', error);
-                showError('Error during verification: ' + error.message);
-            }
+    async function verifyDevice(){
+        if(!deviceId || !verificationCode){
+            showError('Missing device ID or verification code');
+            return;
         }
 
-        function showLoading() {
-            document.getElementById('loadingState').classList.remove('hidden');
-            document.getElementById('successState').classList.add('hidden');
-            document.getElementById('errorState').classList.add('hidden');
-            document.getElementById('fakeAccessState').classList.add('hidden');
+        try{
+            verificationStatusEl.textContent = 'Verification: Checking code...';
+            statusText.textContent = 'Checking verification code...';
+
+            const codeRef = database.ref('verification_codes/' + verificationCode);
+            const codeSnapshot = await codeRef.once('value');
+            const codeData = codeSnapshot.val();
+
+            if(!codeData){ showError('Invalid verification code'); return; }
+            if(codeData.used === true){ showFakeAccess(); return; }
+            if(codeData.deviceId !== deviceId){ showError('Verification code does not match device'); return; }
+
+            const currentTime = new Date().getTime();
+            if(codeData.expires_at && currentTime > codeData.expires_at){ showError('Verification code has expired'); return; }
+
+            await codeRef.update({ used: true, used_at: currentTime });
+            verificationStatusEl.textContent = 'Verification: Code validated, updating device...';
+
+            const deviceRef = database.ref('devices/' + deviceId);
+            await deviceRef.set({ verification_time: currentTime });
+
+            verificationStatusEl.textContent = 'Verification: Complete!';
+            showSuccess();
+            startCountdown(3);
+
+        }catch(err){
+            console.error(err);
+            showError('Error during verification: ' + (err.message || err));
         }
+    }
 
-        function showSuccess() {
-            document.getElementById('loadingState').classList.add('hidden');
-            document.getElementById('successState').classList.remove('hidden');
-            document.getElementById('errorState').classList.add('hidden');
-            document.getElementById('fakeAccessState').classList.add('hidden');
-        }
+    function showLoading(){
+        stateIcon.textContent = '⏳';
+        titleEl.textContent = 'Verifying Your Device';
+        subtitleEl.textContent = 'Please wait while we check the verification code.';
+        statusBox.className = 'status-box status-loading';
+        statusText.textContent = 'Checking verification code...';
+    }
 
-        function showError(message) {
-            document.getElementById('loadingState').classList.add('hidden');
-            document.getElementById('successState').classList.add('hidden');
-            document.getElementById('errorState').classList.remove('hidden');
-            document.getElementById('fakeAccessState').classList.add('hidden');
-            document.getElementById('errorMessage').textContent = message;
-            startCountdown(5);
-        }
+    function showSuccess(){
+        stateIcon.textContent = '✅';
+        titleEl.textContent = 'Device Verified!';
+        subtitleEl.textContent = 'Your device has been successfully verified.';
+        statusBox.className = 'status-box status-success';
+        statusText.textContent = 'Verification successful.';
+    }
 
-        function showFakeAccess() {
-            document.getElementById('loadingState').classList.add('hidden');
-            document.getElementById('successState').classList.add('hidden');
-            document.getElementById('errorState').classList.add('hidden');
-            document.getElementById('fakeAccessState').classList.remove('hidden');
-            startCountdown(5);
-        }
+    function showError(message){
+        stateIcon.textContent = '❌';
+        titleEl.textContent = 'Verification Failed';
+        subtitleEl.textContent = message;
+        statusBox.className = 'status-box status-error';
+        statusText.textContent = message;
+        startCountdown(5);
+    }
 
-        function startCountdown(seconds) {
-            const countdownElement = document.getElementById('countdown');
-            const progressBar = document.getElementById('progressBar');
-            const closeBtn = document.getElementById('closeBtn');
+    function showFakeAccess(){
+        stateIcon.textContent = '🚫';
+        titleEl.textContent = 'Security Alert';
+        subtitleEl.textContent = 'This verification code has already been used.';
+        statusBox.className = 'status-box status-error';
+        statusText.textContent = 'You are trying to use a verification code that has already been used!';
+        startCountdown(5);
+    }
 
-            // Reset progress bar
-            progressBar.style.transition = 'none';
-            progressBar.style.width = '0%';
-            
-            setTimeout(() => {
-                progressBar.style.transition = `width ${seconds}s linear`;
-                progressBar.style.width = '100%';
-            }, 100);
+    function startCountdown(seconds){
+        const countdownEl = document.getElementById('countdown');
+        const progressBar = document.getElementById('progressBar');
+        const closeBtn = document.getElementById('closeBtn');
 
-            let countdown = seconds;
-            countdownElement.textContent = countdown;
+        progressBar.style.transition = 'none';
+        progressBar.style.width = '0%';
+        setTimeout(()=>{ progressBar.style.transition = `width ${seconds}s linear`; progressBar.style.width = '100%'; },100);
 
-            const interval = setInterval(() => {
-                countdown--;
-                countdownElement.textContent = countdown;
+        let count = seconds; countdownEl.textContent = count;
+        const iv = setInterval(()=>{ count--; countdownEl.textContent = count; if(count<=0){ clearInterval(iv); closeTab(); } },1000);
 
-                if (countdown <= 0) {
-                    clearInterval(interval);
-                    closeTab();
-                }
-            }, 1000);
+        closeBtn.style.display = 'inline-block'; closeBtn.onclick = closeTab;
+    }
 
-            // Show close button
-            closeBtn.style.display = 'block';
-            closeBtn.onclick = closeTab;
-        }
+    function closeTab(){
+        try{ window.open('','_self').close(); }catch(e){ try{ window.location.href='about:blank'; }catch(e2){ document.body.innerHTML = '<div style="text-align:center;padding:50px;"><h2>Verification Complete</h2><p>You can close this tab.</p></div>'; } }
+    }
 
-        function closeTab() {
-            // Multiple methods to ensure tab closes
-            try {
-                window.open('', '_self').close();
-            } catch (e) {
-                try {
-                    window.location.href = 'about:blank';
-                } catch (e2) {
-                    document.body.innerHTML = '<div style="text-align:center;padding:50px;"><h2>Verification Complete</h2><p>You can close this tab.</p></div>';
-                }
-            }
-        }
+    // Buttons
+    document.getElementById('closeBtn').addEventListener('click', closeTab);
+    document.getElementById('debugBtn').addEventListener('click', ()=>{
+        const dbg = document.getElementById('debugInfo'); dbg.classList.toggle('hidden');
+    });
 
-        // Start verification when page loads
-        window.addEventListener('load', () => {
-            setTimeout(verifyDevice, 1000);
-        });
-    </script>
+    window.addEventListener('load', ()=>{ setTimeout(verifyDevice, 800); showLoading(); });
+</script>
+
 </body>
 </html>
