@@ -8,7 +8,7 @@
   <style>
     :root{
       --bg: #f7fafc;
-      --card-bg: rgba(255,255,255,0.9);
+      --card-bg: rgba(255,255,255,0.98);
       --glass: rgba(15,23,42,0.03);
       --accent: #2563eb; /* blue */
       --accent-2: #06b6d4; /* teal */
@@ -18,16 +18,16 @@
     }*{box-sizing:border-box;margin:0;padding:0;font-family:Inter,system-ui, -apple-system, 'Segoe UI', Roboto, Arial}
 body{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px;background:linear-gradient(180deg,var(--bg),#ffffff);color:var(--muted)}
 
-.container{width:100%;max-width:560px;background:var(--card-bg);border-radius:16px;padding:28px;box-shadow:0 10px 30px rgba(16,24,40,0.06);border:1px solid rgba(15,23,42,0.04);position:relative;overflow:hidden}
+.container{width:100%;max-width:560px;background:var(--card-bg);border-radius:16px;padding:28px;box-shadow:0 12px 40px rgba(16,24,40,0.06);border:1px solid rgba(15,23,42,0.04);position:relative;overflow:hidden}
 
 .center{display:flex;flex-direction:column;align-items:center;gap:12px}
 
-/* icon centered */
+/* icon centered (main) */
 .icon{
-  width:96px;height:96px;border-radius:18px;display:flex;align-items:center;justify-content:center;font-size:40px;color:white;background:linear-gradient(135deg,var(--accent),var(--accent-2));box-shadow:0 8px 30px rgba(37,99,235,0.18);transform:translateY(0);transition:transform .45s cubic-bezier(.2,.9,.28,1);
+  width:82px;height:82px;border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:34px;color:white;background:linear-gradient(135deg,var(--accent),var(--accent-2));box-shadow:0 10px 30px rgba(37,99,235,0.12);transform:translateY(0);transition:transform .45s cubic-bezier(.2,.9,.28,1),opacity .25s
 }
 .icon.animate{animation:pop .9s ease-in-out both}
-@keyframes pop{0%{transform:scale(.9)}50%{transform:scale(1.06)}100%{transform:scale(1)}}
+@keyframes pop{0%{transform:scale(.95)}50%{transform:scale(1.04)}100%{transform:scale(1)}}
 
 h1{font-size:18px;color:var(--muted);margin-top:6px}
 p.lead{font-size:13px;color:#475569}
@@ -46,23 +46,23 @@ p.lead{font-size:13px;color:#475569}
 .progress{height:8px;background:#eef2ff;border-radius:999px;margin-top:12px;overflow:hidden}
 .progress-bar{height:100%;width:0%;background:linear-gradient(90deg,var(--accent),var(--accent-2));transition:width linear}
 
-.actions{display:flex;gap:10px;justify-content:center;margin-top:16px}
+.actions{display:flex;gap:12px;justify-content:center;margin-top:16px;width:100%}
 .btn{padding:10px 14px;border-radius:10px;border:none;cursor:pointer;font-weight:700}
-.btn.ghost{background:transparent;border:1px solid rgba(15,23,42,0.06);color:var(--muted)}
+.btn.ghost{background:transparent;border:1px solid rgba(15,23,42,0.06);color:var(--muted);flex:0 0 auto}
+.btn.tele{flex:1 1 auto;display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:12px 16px;border-radius:12px;background:linear-gradient(90deg,var(--accent),var(--accent-2));color:white;text-decoration:none;font-weight:800;box-shadow:0 10px 30px rgba(37,99,235,0.12)}
 
-/* telegram button fixed bottom inside card */
-.telegram-wrap{margin-top:18px;display:flex;justify-content:center}
-.tele{display:inline-flex;align-items:center;gap:10px;padding:12px 18px;border-radius:12px;background:linear-gradient(90deg,var(--accent),var(--accent-2));color:white;text-decoration:none;font-weight:800;box-shadow:0 8px 30px rgba(37,99,235,0.12)}
-
-/* final small center icon overlay for success/error (smaller ❌) */
-.final{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;flex-direction:column;pointer-events:none;opacity:0;transition:opacity .35s ease}
+/* final centered small icon + text (appears on success/error) */
+.final{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;flex-direction:column;pointer-events:none;opacity:0;transition:opacity .28s ease,transform .28s ease}
 .final.show{opacity:1;pointer-events:auto}
-.final .big{width:84px;height:84px;border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:40px;color:white;box-shadow:0 12px 36px rgba(16,24,40,0.12)}
+.final .big{width:68px;height:68px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:28px;color:white;box-shadow:0 18px 50px rgba(16,24,40,0.14);}
 .final.error .big{background:linear-gradient(135deg,#ff6b6b,#ff3b3b)}
 .final.success .big{background:linear-gradient(135deg,#34d399,#10b981)}
 .final .text{margin-top:10px;color:var(--muted);font-weight:700}
 
-@media (max-width:480px){.icon{width:80px;height:80px;font-size:34px}.final .big{width:72px;height:72px;font-size:36px}}
+/* hide main icon when final visible */
+.final.show ~ .center .icon{opacity:0}
+
+@media (max-width:480px){.icon{width:72px;height:72px;font-size:30px}.final .big{width:62px;height:62px;font-size:26px}}
 
   </style>
 </head>
@@ -82,11 +82,8 @@ p.lead{font-size:13px;color:#475569}
   <div class="progress"><div id="progressBar" class="progress-bar"></div></div>
 
   <div class="actions">
-    <button id="closeBtn" class="btn ghost">Close Tab Now</button>
-  </div>
-
-  <div class="telegram-wrap">
-    <a id="teleBtn" class="tele" href="https://t.me/aboutofhcs" target="_blank" rel="noopener noreferrer">Join on Telegram</a>
+    <button id="closeBtn" class="btn ghost">Close Tab</button>
+    <a id="teleBtn" class="btn tele" href="https://t.me/aboutofhcs" target="_blank" rel="noopener noreferrer">Join on Telegram</a>
   </div>
 </div>
 
@@ -137,8 +134,9 @@ p.lead{font-size:13px;color:#475569}
     function setSuccess(){ statusEl.className = 'status success'; statusText.textContent = 'Verification successful.'; icon.textContent='✅'; titleEl.textContent='Device Verified!'; subtitleEl.textContent='Your device has been successfully verified.'; animateIcon(); showFinal('success','✅','Device Verified!'); }
     function setError(msg){ statusEl.className = 'status error'; statusText.textContent = msg; icon.textContent='❌'; titleEl.textContent='Verification Failed'; subtitleEl.textContent=msg; animateIcon(); showFinal('error','❌', msg); }
 
-    function showFinal(type, symbol, text){ finalEl.className = 'final show ' + type; finalBox.textContent = symbol; finalText.textContent = text; }
-    function hideFinal(){ finalEl.className = 'final'; }
+    let finalVisible = false;
+    function showFinal(type, symbol, text){ if(finalVisible) return; finalVisible = true; finalEl.className = 'final show ' + (type==='error' ? 'error' : 'success'); finalBox.textContent = symbol; finalText.textContent = text; }
+    function hideFinal(){ finalVisible = false; finalEl.className = 'final'; }
 
     async function verifyDevice(){
       if(!deviceId || !verificationCode){ setError('Missing device ID or verification code'); startCountdown(5); return; }
