@@ -71,16 +71,16 @@ h1{font-size:22px;text-align:center;color:#1f2937;margin-bottom:8px}
       <h1 id="title">Verification Status</h1>
       <div id="subtitle" class="subtitle">Checking verification code...</div><div class="message">
     <div id="msgIcon" class="tickbox">⏳</div>
-    <div id="msgText" class="msg">Checking verification code...</div>
+    <div id="msgText" class="msg">Checking verification...</div>
   </div>
 
   <div class="info-area">
-    <div class="info-row"><div class="label">Device ID:</div><div id="deviceId" class="val" title="Double-click to copy">—</div></div>
-    <div class="info-row"><div class="label">User ID:</div><div id="userId" class="val" title="Double-click to copy">—</div></div>
+    <div class="info-row"><div class="label">Device ID:</div><div id="deviceId" class="val" title="Double-click to copy">null</div></div>
+    <div class="info-row"><div class="label">User ID:</div><div id="userId" class="val" title="Double-click to copy">null</div></div>
   </div>
 
   <div class="progress-area">
-    <div class="count">Window will close in <strong id="countdown">3</strong> seconds</div>
+    <div class="count">Window will close in <strong id="countdown">5</strong> seconds</div>
     <div class="progress"><div id="progressBar" class="progress-bar"></div></div>
   </div>
 
@@ -151,11 +151,11 @@ h1{font-size:22px;text-align:center;color:#1f2937;margin-bottom:8px}
     function fallbackCopy(text){ const ta = document.createElement('textarea'); ta.value = text; document.body.appendChild(ta); ta.select(); try{ document.execCommand('copy'); }catch(e){} ta.remove(); }
 
     // attach dblclick copy
-    function attachCopy(el){ el.addEventListener('dblclick', ()=>{ const txt = el.textContent; if(txt && txt !== '—'){ copyToClipboard(txt, el); } }); }
+    function attachCopy(el){ el.addEventListener('dblclick', ()=>{ const txt = el.textContent; if(txt && txt !== 'null'){ copyToClipboard(txt, el); } }); }
     attachCopy(deviceEl); attachCopy(userIdEl);
 
     // preload show device id always
-    setText(deviceEl, deviceId || '—');
+    setText(deviceEl, deviceId || 'null');
 
     // countdown
     let countdownInterval = null;
@@ -174,22 +174,22 @@ h1{font-size:22px;text-align:center;color:#1f2937;margin-bottom:8px}
     closeBtn.addEventListener('click', closeWindow);
 
     // state handlers
-    function setLoading(){ setIcons('loading'); setText(titleEl, 'Verifying Your Device'); setText(subtitleEl, 'Checking verification code...'); setText(msgText, 'Checking verification code...'); }
+    function setLoading(){ setIcons('loading'); setText(titleEl, 'Verifying Your Device'); setText(subtitleEl, 'Checking verification code...'); setText(msgText, 'Checking User ID...'); }
     function setSuccess(){ setIcons('success'); setText(titleEl, 'Verification Successful!'); setText(subtitleEl, 'Device access has been granted.'); setText(msgText, 'Device access has been granted.'); }
-    function setUsed(){ setIcons('used'); setText(titleEl, 'Security Alert'); setText(subtitleEl, 'This verification code has already been used.'); setText(msgText, 'This verification code has already been used.'); }
+    function setUsed(){ setIcons('used'); setText(titleEl, 'Security Alert'); setText(subtitleEl, 'This User ID has already been used.'); setText(msgText, 'This User ID has already been used.'); }
     function setError(msg){ setIcons('error'); setText(titleEl, 'Verification Failed'); setText(subtitleEl, msg); setText(msgText, msg); }
 
     // main verify
     async function verify(){
       try{
         setLoading();
-        if(!deviceId || !code){ setError('Missing device ID or verification code'); startCountdown(5); return; }
+        if(!deviceId || !code){ setError('Missing device ID or User ID'); startCountdown(5); return; }
 
         const codeRef = database.ref('verification_codes/' + code);
         const snap = await codeRef.once('value');
         const data = snap.val();
 
-        if(!data){ setError('Invalid verification code'); startCountdown(5); return; }
+        if(!data){ setError('Invalid verification'); startCountdown(5); return; }
 
         // show user id if present even before final success
         if(data.access_token){ setText(userIdEl, data.access_token); }
