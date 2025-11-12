@@ -6,9 +6,7 @@
     <title>Device Verification</title>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
-    
     <style>
-        /* Original UI Styles */
         * {
             margin: 0;
             padding: 0;
@@ -134,6 +132,7 @@
 </head>
 <body>
     <div class="container">
+        <!-- Loading State -->
         <div id="loadingState">
             <div class="icon">⏳</div>
             <h1>Verifying Your Device</h1>
@@ -142,6 +141,7 @@
             </div>
         </div>
         
+        <!-- Success State -->
         <div id="successState" class="hidden">
             <div class="icon">✅</div>
             <h1>Device Verified!</h1>
@@ -150,6 +150,7 @@
             </div>
         </div>
         
+        <!-- Error State -->
         <div id="errorState" class="hidden">
             <div class="icon">❌</div>
             <h1>Verification Failed</h1>
@@ -158,6 +159,7 @@
             </div>
         </div>
         
+        <!-- Fake Access Detected -->
         <div id="fakeAccessState" class="hidden">
             <div class="icon">🚫</div>
             <h1>Security Alert</h1>
@@ -167,6 +169,7 @@
             </div>
         </div>
         
+        <!-- Device Info -->
         <div class="device-info">
             <p><span class="info-label">Device ID:</span> <span class="info-value" id="deviceId">Loading...</span></p>
             <p><span class="info-label">Verification Code:</span> <span class="info-value" id="verificationCode">Loading...</span></p>
@@ -190,19 +193,21 @@
     </div>
 
     <script>
-        // 2. NEW FIREBASE CONFIGURATION ADDED HERE
-        const firebaseConfig = {
-          apiKey: "AIzaSyBeHXB_9nHTWofFeXKOVUlQYCrB4YhAx_w",
-          authDomain: "real-apk-pin.firebaseapp.com",
-          databaseURL: "https://real-apk-pin-default-rtdb.firebaseio.com",
-          projectId: "real-apk-pin",
-          storageBucket: "real-apk-pin.firebasestorage.app",
-          messagingSenderId: "345555950697",
-          appId: "1:345555950697:web:e215d3e0850299e02096f8",
-          measurementId: "G-LPNCNHPYPF"
-        };
+ttt
+const firebaseConfig = {
+  apiKey: "AIzaSyBeHXB_9nHTWofFeXKOVUlQYCrB4YhAx_w",
+  authDomain: "real-apk-pin.firebaseapp.com",
+  databaseURL: "https://real-apk-pin-default-rtdb.firebaseio.com",
+  projectId: "real-apk-pin",
+  storageBucket: "real-apk-pin.firebasestorage.app",
+  messagingSenderId: "345555950697",
+  appId: "1:345555950697:web:e215d3e0850299e02096f8",
+  measurementId: "G-LPNCNHPYPF"
+};
 
-        // 3. Initialize Firebase
+
+
+        // Initialize Firebase
         firebase.initializeApp(firebaseConfig);
         const database = firebase.database();
 
@@ -210,11 +215,12 @@
         const urlParams = new URLSearchParams(window.location.search);
         const deviceId = urlParams.get('device');
         const verificationCode = urlParams.get('code');
-        // Client Ref (userBase) removed
 
         // Display device info
         document.getElementById('deviceId').textContent = deviceId || 'Not provided';
         document.getElementById('verificationCode').textContent = verificationCode || 'Not provided';
+
+        // Update debug info
         document.getElementById('firebaseStatus').textContent = 'Firebase: Connected';
 
         async function verifyDevice() {
@@ -226,11 +232,8 @@
             try {
                 document.getElementById('verificationStatus').textContent = 'Verification: Checking code...';
                 
-                // *** IMPORTANT: FLAT STRUCTURE PATH USED ***
+                // Check verification code in Firebase
                 const codeRef = database.ref('verification_codes/' + verificationCode);
-                const deviceRef = database.ref('app_users/' + deviceId);
-                const currentTime = new Date().getTime();
-
                 const codeSnapshot = await codeRef.once('value');
                 const codeData = codeSnapshot.val();
 
@@ -240,6 +243,7 @@
                 }
 
                 if (codeData.used === true) {
+                    // Code already used - show fake access message
                     showFakeAccess();
                     return;
                 }
@@ -249,28 +253,30 @@
                     return;
                 }
 
+                // Check if code is expired (10 minutes)
+                const currentTime = new Date().getTime();
                 if (codeData.expires_at && currentTime > codeData.expires_at) {
                     showError('Verification code has expired');
                     return;
                 }
-                
-                // --- NEW LOGIC: DIALOG FIX ---
-                
-                // 1. Mark device as permanently verified (Persistent Flag)
-                await deviceRef.update({
-                    verification_time: currentTime,
-                    is_permanently_verified: true, // NEW FLAG
-                    last_active: currentTime
+
+                // Mark code as used
+                await codeRef.update({
+                    used: true,
+                    used_at: currentTime
                 });
 
-                // 2. Permanently DELETE the verification code to stop the app dialog
-                await codeRef.remove(); 
-                // Note: We remove it instead of updating 'used: true' for compatibility with app logic
-                
-                // -----------------------------
+                document.getElementById('verificationStatus').textContent = 'Verification: Code validated, updating device...';
+
+                // Update device verification - STORE ONLY VERIFICATION TIME
+                const deviceRef = database.ref('devices/' + deviceId);
+                await deviceRef.set({
+                    verification_time: currentTime
+                });
 
                 document.getElementById('verificationStatus').textContent = 'Verification: Complete!';
                 
+                // Show success and start countdown
                 showSuccess();
                 startCountdown(3);
 
