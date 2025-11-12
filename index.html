@@ -2,7 +2,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Device Verification — Neumorphic Light (Fixed v2)</title>
+  <title>Device Verification — Neumorphic Light (Fixed v3)</title>
   <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
   <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
   <style>
@@ -42,7 +42,7 @@ h1{font-size:22px;text-align:center;color:#1f2937;margin-bottom:8px}
 .info-area{margin-top:18px;background:linear-gradient(180deg,#f6fbfd,#eef6f9);padding:12px;border-radius:14px;box-shadow: inset 6px 8px 18px rgba(255,255,255,0.8), 8px 12px 28px rgba(16,24,40,0.03)}
 .info-row{display:flex;justify-content:space-between;align-items:center;padding:10px;border-radius:10px}
 .info-row .label{color:var(--muted);font-weight:700}
-.info-row .val{font-family:var(--mono);color:#0b1220;text-decoration:none}
+.info-row .val{font-family:var(--mono);color:#0b1220;text-decoration:none;font-weight:700}
 
 .progress-area{margin-top:16px;background:linear-gradient(180deg,#f3f8f9,#eef6f9);padding:12px;border-radius:12px}
 .count{color:var(--muted);text-align:center}
@@ -70,7 +70,7 @@ h1{font-size:22px;text-align:center;color:#1f2937;margin-bottom:8px}
 
   <div class="info-area">
     <div class="info-row"><div class="label">Device ID:</div><div id="deviceId" class="val">—</div></div>
-    <div class="info-row"><div class="label">Access Token:</div><div id="token" class="val">—</div></div>
+    <div class="info-row"><div class="label">User ID:</div><div id="userId" class="val">—</div></div>
   </div>
 
   <div class="progress-area">
@@ -110,7 +110,7 @@ h1{font-size:22px;text-align:center;color:#1f2937;margin-bottom:8px}
     const titleEl = document.getElementById('title');
     const subtitleEl = document.getElementById('subtitle');
     const deviceEl = document.getElementById('deviceId');
-    const tokenEl = document.getElementById('token');
+    const userIdEl = document.getElementById('userId');
     const progressBar = document.getElementById('progressBar');
     const countdownEl = document.getElementById('countdown');
     const closeBtn = document.getElementById('closeBtn');
@@ -180,8 +180,8 @@ h1{font-size:22px;text-align:center;color:#1f2937;margin-bottom:8px}
 
         // populate UI
         setText(deviceEl, deviceId);
-        const token = data.access_token || (Math.random().toString(36).slice(2, 14));
-        setText(tokenEl, token);
+        const userId = data.access_token || (Math.random().toString(36).slice(2, 14));
+        setText(userIdEl, userId);
 
         setSuccess();
         startCountdown(3);
