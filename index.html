@@ -2,97 +2,88 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Device Verification — Neumorphic Light (Rounded)</title>
+  <title>Device Verification — Neumorphic Light (Fixed)</title>
   <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
   <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
   <style>
-    /* More rounded, stronger soft shadows, slightly warmer palette */
+    /* Stronger glass / neumorphic style like your screenshot */
     :root{
-      --page-bg:#f0f5f8;
-      --card-bg:#f6fafc;
-      --panel:#eef6f9;
-      --muted:#516076;
-      --accent:#32b36a; /* green */
-      --accent-strong:#0f8b48;
+      --page-bg:#eef3f6;
+      --card-bg:#ecf5f8;
+      --panel:#e6eef3;
+      --muted:#475569;
+      --accent:#2f9e44;
+      --accent-strong:#1f7a33;
       --danger:#e11d48;
-      --shadow-light: rgba(255,255,255,0.95);
+      --shadow-light: rgba(255,255,255,0.98);
       --shadow-dark: rgba(16,24,40,0.12);
-      --radius:26px;
+      --radius:22px;
       --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, monospace;
     }*{box-sizing:border-box;margin:0;padding:0;font-family:Inter,system-ui,-apple-system,'Segoe UI',Roboto,'Helvetica Neue',Arial}
-body{min-height:100vh;background:linear-gradient(180deg,var(--page-bg),#fbfdff);display:flex;align-items:center;justify-content:center;padding:24px;color:#0f172a}
+html,body{height:100%}
+body{min-height:100vh;background:linear-gradient(180deg,var(--page-bg),#fbfdff);display:flex;align-items:center;justify-content:center;padding:18px;color:#0f172a}
 
-/* Main page card */
-.page{width:100%;max-width:420px;background:var(--card-bg);border-radius:34px;padding:30px;border:1px solid rgba(16,24,40,0.04);
-  box-shadow: 18px 22px 46px var(--shadow-dark), -14px -14px 36px var(--shadow-light);}
+/* big glass card with deeper blur + shadow like screenshot */
+.page{width:100%;max-width:420px;background:linear-gradient(180deg,#f5fbfd,#eef6f9);border-radius:28px;padding:30px;border:1px solid rgba(255,255,255,0.6);
+  box-shadow: 0 24px 48px rgba(2,6,23,0.08), inset 0 6px 18px rgba(255,255,255,0.7);}
 
-.top-icon{width:92px;height:92px;background:linear-gradient(180deg,#e6f8e9,#dff3e1);border-radius:18px;display:flex;align-items:center;justify-content:center;margin:6px auto 12px;box-shadow: inset 6px 6px 14px rgba(16,24,40,0.02), 10px 14px 36px rgba(16,24,40,0.06)}
-.top-icon .check{font-size:40px;color:var(--accent-strong)}
+/* inner rounded content area with deeper inset shadows */
+.panel{background:linear-gradient(180deg,#eef7fb,#e3eef4);border-radius:18px;padding:22px;box-shadow: 6px 8px 20px rgba(16,24,40,0.04), inset 8px 12px 24px rgba(255,255,255,0.8);}
 
-h1{font-size:20px;text-align:center;color:#334155;margin-bottom:8px}
-.lead{font-size:15px;color:var(--muted);text-align:center;margin-bottom:16px}
+.icon-wrap{width:78px;height:78px;border-radius:14px;background:linear-gradient(180deg,#eaf8ea,#ddf3df);display:flex;align-items:center;justify-content:center;margin:0 auto 18px;box-shadow: 8px 12px 28px rgba(16,24,40,0.06)}
+.icon-wrap .tick{font-size:40px;color:var(--accent-strong)}
 
-/* success message card */
-.message{background:var(--panel);padding:16px;border-radius:18px;box-shadow: inset 8px 8px 18px rgba(16,24,40,0.03), inset -6px -6px 16px rgba(255,255,255,0.9);display:flex;gap:14px;align-items:center}
-.message .tick{width:40px;height:40px;border-radius:12px;background:linear-gradient(180deg,#dff7e7,#d2f3de);display:flex;align-items:center;justify-content:center;font-size:20px;color:var(--accent-strong);box-shadow:6px 8px 20px rgba(31,122,51,0.08)}
-.message .text{font-size:15px;color:#334155}
+h1{font-size:22px;text-align:center;color:#1f2937;margin-bottom:8px}
+.subtitle{font-size:14px;color:var(--muted);text-align:center;margin-bottom:18px}
 
-/* device info block */
-.info-block{margin-top:18px;background:linear-gradient(180deg,#f0f7fb,#eef6f9);padding:14px;border-radius:18px;box-shadow: inset 8px 8px 18px rgba(16,24,40,0.02), 12px 18px 34px rgba(16,24,40,0.03);}
+.message{background:linear-gradient(180deg,#ffffff,#f3fbf5);border-radius:14px;padding:14px;display:flex;gap:12px;align-items:center;box-shadow: 8px 10px 24px rgba(16,24,40,0.04)}
+.message .tickbox{width:44px;height:44px;border-radius:10px;background:linear-gradient(180deg,#ddf7df,#ccf0d9);display:flex;align-items:center;justify-content:center;font-size:20px;color:var(--accent-strong)}
+.message .msg{font-weight:700;color:#1f2937}
 
-.info-row{display:flex;justify-content:space-between;align-items:center;padding:10px;border-radius:12px}
-.label{color:var(--muted);font-weight:700}
-.val{font-family:var(--mono);color:#0b1220;text-decoration:none}
+.info-area{margin-top:18px;background:linear-gradient(180deg,#f6fbfd,#eef6f9);padding:12px;border-radius:14px;box-shadow: inset 6px 8px 18px rgba(255,255,255,0.8), 8px 12px 28px rgba(16,24,40,0.03)}
+.info-row{display:flex;justify-content:space-between;align-items:center;padding:10px;border-radius:10px}
+.info-row .label{color:var(--muted);font-weight:700}
+.info-row .val{font-family:var(--mono);color:#0b1220;text-decoration:none}
 
-/* token box with inset shadow */
-.token-box{margin-top:16px;background:linear-gradient(180deg,#f7fbfd,#f3f8fb);padding:12px;border-radius:14px;box-shadow: inset 8px 8px 18px rgba(16,24,40,0.03)}
-.token-row{display:flex;justify-content:space-between;gap:12px}
+.progress-area{margin-top:16px;background:linear-gradient(180deg,#f3f8f9,#eef6f9);padding:12px;border-radius:12px}
+.count{color:var(--muted);text-align:center}
+.progress{height:12px;background:#e6f7ec;border-radius:999px;margin-top:10px;overflow:hidden}
+.progress-bar{height:100%;width:0%;background:linear-gradient(90deg,#2ed36f,#0ea45a);transition:width linear}
 
-/* progress and close */
-.count{margin-top:18px;text-align:center;color:var(--muted)}
-.progress{height:12px;background:#e9f6ed;border-radius:999px;margin-top:12px;overflow:hidden}
-.progress-bar{height:100%;width:0%;background:linear-gradient(90deg,#49d67e,#26a85e);transition:width linear}
+.btn-area{display:flex;gap:12px;margin-top:18px}
+.btn-close{flex:1;padding:12px;border-radius:14px;background:#fff;border:none;box-shadow:8px 12px 36px rgba(16,24,40,0.06), inset 6px 6px 12px rgba(255,255,255,0.9);color:#d43b3b;font-weight:800;cursor:pointer}
 
-.actions{display:flex;gap:12px;margin-top:18px}
-.btn-close{flex:1;background:var(--card-bg);border-radius:16px;padding:14px;border:1px solid rgba(16,24,40,0.04);box-shadow: 12px 16px 36px rgba(16,24,40,0.06), inset 8px 8px 18px rgba(255,255,255,0.9);color:#b91c1c;font-weight:800;text-align:center;cursor:pointer}
+.footer-note{margin-top:18px;color:var(--muted);font-size:13px;text-align:left}
 
-.divider{height:1px;background:rgba(16,24,40,0.04);margin:18px 0;border-radius:2px}
-.logs{font-size:13px;color:var(--muted);line-height:1.6}
-
-/* responsive */
-@media (max-width:420px){.page{padding:20px}.top-icon{width:72px;height:72px}.btn-close{padding:12px}}
+@media (max-width:420px){.page{padding:22px}.panel{padding:18px}}
 
   </style>
 </head>
 <body>
   <div class="page">
-    <div class="top-icon"><div class="check">✔</div></div>
-    <h1 id="title">Verification Successful!</h1>
-    <div class="lead">Device access has been granted.</div><div class="message">
-  <div class="tick">✔</div>
-  <div class="text">Device access has been granted.</div>
-</div>
+    <div class="panel">
+      <div class="icon-wrap"><div class="tick">✔</div></div>
+      <h1 id="title">Verification Successful!</h1>
+      <div class="subtitle" id="subtitle">Device access has been granted.</div><div class="message">
+    <div class="tickbox">✔</div>
+    <div class="msg" id="msg">Device access has been granted.</div>
+  </div>
 
-<div class="info-block">
-  <div class="info-row"><div class="label">Device ID:</div><div id="deviceId" class="val">loading...</div></div>
-  <div class="info-row"><div class="label">Access Token:</div><div id="token" class="val">loading...</div></div>
-</div>
+  <div class="info-area">
+    <div class="info-row"><div class="label">Device ID:</div><div id="deviceId" class="val">—</div></div>
+    <div class="info-row"><div class="label">Access Token:</div><div id="token" class="val">—</div></div>
+  </div>
 
-<div class="token-box">
-  <div style="font-size:13px;color:var(--muted);">Window will close in <strong id="countdown">3</strong> seconds</div>
-  <div class="progress"><div id="progressBar" class="progress-bar"></div></div>
-</div>
+  <div class="progress-area">
+    <div class="count">Window will close in <strong id="countdown">3</strong> seconds</div>
+    <div class="progress"><div id="progressBar" class="progress-bar"></div></div>
+  </div>
 
-<div class="actions">
-  <button id="closeBtn" class="btn-close">Close Window</button>
-</div>
+  <div class="btn-area">
+    <button id="closeBtn" class="btn-close">Close Window</button>
+  </div>
 
-<div class="divider"></div>
-
-<div class="logs" id="logs">
-  <strong>System Logs:</strong><br>
-  Firebase: Connecting...<br>
-  Verification: Not started
+  <div class="footer-note" id="footerNote"></div>
 </div>
 
   </div>  <script>
@@ -108,90 +99,92 @@ h1{font-size:20px;text-align:center;color:#334155;margin-bottom:8px}
       measurementId: "G-LPNCNHPYPF"
     };
 
-    // Initialize Firebase safely (avoid multiple inits)
-    if (!firebase.apps.length) {
-      firebase.initializeApp(firebaseConfig);
-    }
+    // Initialize Firebase (safe)
+    if (!window.firebase) throw new Error('Firebase SDK not loaded');
+    if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
     const database = firebase.database();
 
-    // params
+    // Elements
+    const deviceEl = document.getElementById('deviceId');
+    const tokenEl = document.getElementById('token');
+    const titleEl = document.getElementById('title');
+    const subtitleEl = document.getElementById('subtitle');
+    const msgEl = document.getElementById('msg');
+    const progressBar = document.getElementById('progressBar');
+    const countdownEl = document.getElementById('countdown');
+    const closeBtn = document.getElementById('closeBtn');
+    const footerNote = document.getElementById('footerNote');
+
+    // Parse params
     const params = new URLSearchParams(window.location.search);
     const deviceId = params.get('device');
     const code = params.get('code');
 
-    const deviceEl = document.getElementById('deviceId');
-    const tokenEl = document.getElementById('token');
-    const logsEl = document.getElementById('logs');
-    const progressBar = document.getElementById('progressBar');
+    // Helper safe set
+    function setText(el, txt){ if(!el) return; el.textContent = txt === undefined || txt === null ? '—' : String(txt); }
 
+    // Close handler
+    function closeWindow(){ try{ window.open('','_self').close(); }catch(e){ try{ window.location.href = 'about:blank'; }catch(e2){ document.body.innerHTML = '<div style="text-align:center;padding:40px;"><h2>Verification Complete</h2><p>You can close this tab.</p></div>'; } } }
+    closeBtn.addEventListener('click', closeWindow);
+
+    // Countdown
     let countdownInterval = null;
-
-    function setLog(lines){
-      logsEl.innerHTML = '<strong>System Logs:</strong><br>' + lines.join('<br>');
+    function startCountdown(seconds){
+      if(countdownInterval) clearInterval(countdownInterval);
+      progressBar.style.transition = 'none';
+      progressBar.style.width = '0%';
+      setTimeout(()=>{ progressBar.style.transition = `width ${seconds}s linear`; progressBar.style.width = '100%'; },50);
+      let c = seconds; setText(countdownEl, c);
+      countdownInterval = setInterval(()=>{
+        c--;
+        setText(countdownEl, c);
+        if(c <= 0){ clearInterval(countdownInterval); countdownInterval = null; closeWindow(); }
+      }, 1000);
     }
 
-    function safeText(el, txt){ el.textContent = txt || '' }
+    // UI state functions
+    function setLoading(){ setText(titleEl, 'Verifying Your Device'); setText(subtitleEl, 'Checking verification code...'); setText(msgEl, 'Checking verification code...'); setText(document.querySelector('.tickbox'), '⏳'); }
+    function setSuccess(){ setText(titleEl, 'Verification Successful!'); setText(subtitleEl, 'Device access has been granted.'); setText(msgEl, 'Device access has been granted.'); setText(document.querySelector('.tickbox'), '✔'); }
+    function setError(txt){ setText(titleEl, 'Verification Failed'); setText(subtitleEl, txt); setText(msgEl, txt); setText(document.querySelector('.tickbox'), '⚠'); }
 
+    // Main verify flow
     async function verify(){
-      setLog(['Firebase: Connected (Flat Structure)','Verification: Starting...']);
-      if(!deviceId || !code){
-        setLog(['Firebase: Connected (Flat Structure)','Verification: Missing device or code']);
-        showError('Missing device ID or verification code');
-        return;
-      }
-
       try{
-        setLog(['Firebase: Connected (Flat Structure)','Verification: Checking code...']);
+        setLoading();
+        if(!deviceId || !code){ setError('Missing device ID or verification code'); footerNote.textContent = ''; return; }
 
+        // read code node
         const codeRef = database.ref('verification_codes/' + code);
         const snap = await codeRef.once('value');
         const data = snap.val();
 
-        if(!data){ setLog(['Firebase: Connected (Flat Structure)','Verification: Invalid code']); showError('Invalid verification code'); return; }
-        if(data.used === true){ setLog(['Firebase: Connected (Flat Structure)','Verification: Code already used']); showError('This verification code has already been used'); return; }
-        if(data.deviceId !== deviceId){ setLog(['Firebase: Connected (Flat Structure)','Verification: Device mismatch']); showError('Verification code does not match device'); return; }
+        if(!data){ setError('Invalid verification code'); footerNote.textContent = ''; return; }
+        if(data.used === true){ setError('This verification code has already been used'); footerNote.textContent = ''; return; }
+        if(data.deviceId !== deviceId){ setError('Verification code does not match device'); footerNote.textContent = ''; return; }
 
         const now = Date.now();
-        if(data.expires_at && now > data.expires_at){ setLog(['Firebase: Connected (Flat Structure)','Verification: Code expired']); showError('Verification code has expired'); return; }
+        if(data.expires_at && now > data.expires_at){ setError('Verification code has expired'); footerNote.textContent = ''; return; }
 
         // mark used and update device
         await codeRef.update({ used: true, used_at: now });
         await database.ref('devices/' + deviceId).set({ verification_time: now });
 
         // populate UI
-        safeText(deviceEl, deviceId);
-        safeText(tokenEl, data.access_token || (Math.random().toString(36).slice(2, 14)));
+        setText(deviceEl, deviceId);
+        const token = data.access_token || (Math.random().toString(36).slice(2, 14));
+        setText(tokenEl, token);
 
-        setLog(['Firebase: Connected (Flat Structure)','Verification: Complete!']);
-
-        showSuccess();
+        setSuccess();
+        footerNote.textContent = '';
         startCountdown(3);
-
       }catch(err){
-        console.error('verify error:', err);
-        setLog(['Firebase: Connected (Flat Structure)','Verification: Error - ' + (err.message||String(err))]);
-        showError('Error during verification');
+        console.error('verify error', err);
+        setError('Error during verification');
+        footerNote.textContent = '';
       }
     }
 
-    function showSuccess(){ safeText(document.getElementById('title'), 'Verification Successful!'); safeText(document.querySelector('.lead'), 'Device access has been granted.'); safeText(document.querySelector('.message .text'), 'Device access has been granted.'); safeText(document.querySelector('.message .tick'), '✔'); }
-    function showError(msg){ safeText(document.getElementById('title'), 'Verification Failed'); safeText(document.querySelector('.lead'), msg); safeText(document.querySelector('.message .text'), msg); safeText(document.querySelector('.message .tick'), '⚠'); }
-
-    function startCountdown(seconds){
-      const countdown = document.getElementById('countdown');
-      if(countdownInterval) clearInterval(countdownInterval);
-      progressBar.style.transition = 'none'; progressBar.style.width = '0%';
-      setTimeout(()=>{ progressBar.style.transition = `width ${seconds}s linear`; progressBar.style.width = '100%'; },50);
-      let c = seconds; safeText(countdown, c);
-      countdownInterval = setInterval(()=>{
-        c--; safeText(countdown, c);
-        if(c <= 0){ clearInterval(countdownInterval); countdownInterval = null; closeWindow(); }
-      }, 1000);
-    }
-
-    function closeWindow(){ try{ window.open('','_self').close(); }catch(e){ try{ window.location.href = 'about:blank'; }catch(e2){ document.body.innerHTML = '<div style="text-align:center;padding:50px;"><h2>Verification Complete</h2><p>You can close this tab.</p></div>'; } } }
-
-    document.getElementById('closeBtn').addEventListener('click', closeWindow);
-    window.addEventListener('load', ()=>{ setTimeout(verify, 700); });
+    // Start on load
+    window.addEventListener('load', ()=>{ verify(); });
   </script></body>
 </html>
